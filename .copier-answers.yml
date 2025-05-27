@@ -1,0 +1,19 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v4.3.8
+_src_path: https://github.com/jupyterlab/extension-template
+author_email: turquoisea.tsai@gmail.com
+author_name: Shin-Rong Tsai
+data_format: string
+file_extension: ''
+has_binder: false
+has_settings: false
+kind: server
+labextension_name: jupyter-yesworkflow
+mimetype: ''
+mimetype_name: ''
+project_short_description: A JupyterLab extension for visualizing YesWorkflow.
+python_name: jupyter_yesworkflow
+repository: https://github.com/cindytsai/jupyter-yesworkflow.git
+test: false
+viewer_name: ''
+
