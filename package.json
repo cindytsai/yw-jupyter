@@ -57,6 +57,7 @@
     "dependencies": {
         "@jupyterlab/application": "^4.0.0",
         "@jupyterlab/coreutils": "^6.0.0",
+        "@jupyterlab/notebook": "^4.4.3",
         "@jupyterlab/services": "^7.0.0"
     },
     "devDependencies": {
@@ -104,7 +105,8 @@
             }
         },
         "extension": true,
-        "outputDir": "jupyter_yesworkflow/labextension"
+        "outputDir": "jupyter_yesworkflow/labextension",
+        "schemaDir": "schema"
     },
     "eslintIgnore": [
         "node_modules",

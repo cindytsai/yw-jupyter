@@ -123,3 +123,5 @@ dmypy.json
 .venv/
 
 .idea/
+
+*.ipynb

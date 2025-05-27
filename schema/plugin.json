@@ -1,0 +1,15 @@
+{
+  "title": "yesworkflow",
+  "description": "YesWorkflow toolbox",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false,
+  "jupyter.lab.toolbars": {
+    "Notebook": [
+      {
+        "name": "yesworkflow-toolbars-button",
+        "command": "jupyter-yesworkflow:open"
+      }
+    ]
+  }
+}

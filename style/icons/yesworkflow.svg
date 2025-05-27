@@ -1,0 +1,12 @@
+<svg width="20px" height="20px" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+ <title>yesworkflow-icon</title>
+
+ <g>
+  <title>Layer 1</title>
+  <g id="svg_3">
+   <text transform="matrix(13.8088 0 0 14.7248 -2723.37 -1898.43)" stroke="#000" xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="24" id="svg_1" y="147.17819" x="198.59636" stroke-width="0" fill="#3f007f">Y</text>
+   <text transform="matrix(13.8088 0 0 14.7248 -2587.37 -1792.43)" stroke="#000" xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="24" id="svg_2" y="153.29034" x="199.5378" stroke-width="0" fill="#3f007f">W</text>
+  </g>
+  <text xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="24" id="svg_4" y="111" x="366" stroke-width="0" stroke="#000" fill="#3f007f"/>
+ </g>
+</svg>
