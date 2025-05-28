@@ -64,7 +64,7 @@ function activate(
         }
       );
       if (widget === undefined) {
-        const content = new YWWidget();
+        const content = new YWWidget(notebook.id);
         widget = new MainAreaWidget({ content });
         widget.id = 'ywwidget-' + notebook.id;
         widget.title.label = 'YW: ' + notebook.title.label;
