@@ -1,51 +1,37 @@
 import { ReactWidget } from '@jupyterlab/ui-components';
 
-import { Button } from './components/ui/button';
+import NodeHeaderDemoNode from './cell-node';
 
-import React, { useState } from 'react';
+import React from 'react';
 
 import '../style/index.css';
+import {Background, ReactFlow} from "@xyflow/react";
 
-interface CounterComponentProps {
-  notebookID?: string;
+const nodeTypes = {
+  nodeHeaderNode: NodeHeaderDemoNode,
+};
+
+const defaultNodes = [
+  {
+    id: "1",
+    type: "nodeHeaderNode",
+    position: { x: 200, y: 200 },
+    data: {},
+  },
+];
+
+function App() {
+  return (
+      <ReactFlow defaultNodes={defaultNodes} nodeTypes={nodeTypes} fitView>
+        <Background />
+      </ReactFlow>
+  );
 }
 
 /**
- * React component for a counter.
- *
- * @returns The React component
- */
-const CounterComponent = ({
-  notebookID
-}: CounterComponentProps): JSX.Element => {
-  const [counter, setCounter] = useState(0);
-
-  return (
-      <div>
-          <h1 className="text-3xl font-bold underline">
-              Hello world!
-          </h1>
-          <p>You clicked {counter} times!</p>
-          <p>Notebook ID: {notebookID}</p>
-          <Button
-              onClick={(): void => {
-                  setCounter(counter + 1);
-              }}
-              variant="outline"
-          >
-              Increment
-          </Button>
-      </div>
-  );
-};
-
-/**
- * A Counter Lumino Widget that wraps a CounterComponent.
+ * A YWWidget that visualizes YesWorkflow data in a ReactFlow graph.
  */
 export class YWWidget extends ReactWidget {
-  /**
-   * Constructs a new CounterWidget.
-   */
   readonly notebookID: string;
 
   constructor(notebookID: string) {
@@ -55,6 +41,6 @@ export class YWWidget extends ReactWidget {
   }
 
   render(): JSX.Element {
-    return <CounterComponent notebookID={this.notebookID} />;
+    return <App />;
   }
 }
