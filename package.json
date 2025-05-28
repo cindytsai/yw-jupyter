@@ -58,7 +58,9 @@
         "@jupyterlab/application": "^4.0.0",
         "@jupyterlab/coreutils": "^6.0.0",
         "@jupyterlab/notebook": "^4.4.3",
-        "@jupyterlab/services": "^7.0.0"
+        "@jupyterlab/services": "^7.0.0",
+        "@tailwindcss/cli": "^4.1.7",
+        "tailwindcss": "^4.1.7"
     },
     "devDependencies": {
         "@jupyterlab/builder": "^4.0.0",
