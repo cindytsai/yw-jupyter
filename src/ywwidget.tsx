@@ -4,28 +4,38 @@ import NodeHeaderDemoNode from './cell-node';
 
 import React from 'react';
 
-import {Background, ReactFlow} from "@xyflow/react";
+import {
+  Background,
+  Controls,
+  MiniMap,
+  ReactFlow,
+  ReactFlowProvider
+} from '@xyflow/react';
 
-import "@xyflow/react/dist/style.css";
+import '@xyflow/react/dist/style.css';
 
 const nodeTypes = {
-  nodeHeaderNode: NodeHeaderDemoNode,
+  nodeHeaderNode: NodeHeaderDemoNode
 };
 
 const defaultNodes = [
   {
-    id: "1",
-    type: "nodeHeaderNode",
+    id: '1',
+    type: 'nodeHeaderNode',
     position: { x: 200, y: 200 },
-    data: {},
-  },
+    data: {}
+  }
 ];
 
 function App() {
   return (
+    <ReactFlowProvider>
       <ReactFlow defaultNodes={defaultNodes} nodeTypes={nodeTypes} fitView>
+        <MiniMap pannable zoomable />
+        <Controls />
         <Background />
       </ReactFlow>
+    </ReactFlowProvider>
   );
 }
 
