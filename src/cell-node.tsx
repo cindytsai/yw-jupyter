@@ -1,22 +1,22 @@
-import React, { memo } from "react";
+import React, { memo } from 'react';
 
-import { NodeProps } from "@xyflow/react";
+import { NodeProps } from '@xyflow/react';
 
-import { BaseNode } from "./components/base-node";
+import { BaseNode } from './components/base-node';
 import {
   NodeHeader,
   NodeHeaderTitle,
   NodeHeaderActions,
   NodeHeaderMenuAction,
   NodeHeaderIcon,
-  NodeHeaderDeleteAction,
-} from "./components/node-header";
+  NodeHeaderDeleteAction
+} from './components/node-header';
 import {
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "./components/ui/dropdown-menu";
-import { Rocket } from "lucide-react";
+  DropdownMenuSeparator
+} from './components/ui/dropdown-menu';
+import { Rocket } from 'lucide-react';
 
 const NodeHeaderDemo = memo(({ selected }: NodeProps) => {
   return (

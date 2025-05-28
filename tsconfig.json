@@ -24,10 +24,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": [
-    "src/*",
-    "src/lib/*",
-    "src/components/*",
-    "src/components/ui/*"
-  ]
+  "include": ["src/*", "src/lib/*", "src/components/*", "src/components/ui/*"]
 }

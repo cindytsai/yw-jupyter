@@ -57,6 +57,8 @@ function activate(
         return;
       }
 
+      console.log('Notebook: ', notebook);
+
       // create YWWidget
       let widget: MainAreaWidget<YWWidget> | undefined = ywWidgetTracker.find(
         widget => {
