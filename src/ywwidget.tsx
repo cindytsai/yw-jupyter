@@ -1,11 +1,12 @@
 import { ReactWidget } from '@jupyterlab/ui-components';
 
-import CellNode from './cell-node';
+import { CellNodeWidget } from './cell-node-widget';
 
 import React from 'react';
 
+import { CellNode } from './cell-node-widget';
+
 import {
-  Node,
   Background,
   Controls,
   MiniMap,
@@ -15,21 +16,12 @@ import {
 
 import '@xyflow/react/dist/style.css';
 
-interface CellNodeData extends Record<string, unknown> {
-  exec_count: number;
-  header: string;
-  code_block: string;
-  status: 'not-execute' | 'executing' | 'executed';
-}
-
-export type CellNodeProp = Node<CellNodeData>;
-
 const nodeTypes = {
-  cell: CellNode
+  cell: CellNodeWidget
 };
 
 interface AppProps {
-  defaultNodes: CellNodeProp[];
+  defaultNodes: CellNode[];
 }
 
 function App({ defaultNodes }: AppProps): JSX.Element {
@@ -50,7 +42,7 @@ function App({ defaultNodes }: AppProps): JSX.Element {
  */
 export class YWWidget extends ReactWidget {
   readonly notebookID: string;
-  defaultNodes: CellNodeProp[];
+  defaultNodes: CellNode[];
 
   constructor(notebookID: string) {
     super();
@@ -58,11 +50,21 @@ export class YWWidget extends ReactWidget {
     this.notebookID = notebookID;
 
     // initialize default nodes
+    // TODO: call
+    //  const cells = this.notebook.content.widgets.filter(cell => {
+    //       return cell.model.type === 'code';
+    //     });
+    //
+    //     console.log('YWWidget observes notebook and calls updateView: ');
+    //     cells.forEach(cell => {
+    //       console.log(cell.model.toJSON());
+    //     });
+    console.log('Constructing YWWidget with notebookID: ', notebookID);
     this.defaultNodes = [
       {
         id: '1',
         type: 'cell',
-        position: { x: 200, y: 200 },
+        position: { x: 0, y: 0 },
         data: {
           exec_count: 0,
           header: 'Cell 1',
@@ -74,6 +76,7 @@ export class YWWidget extends ReactWidget {
   }
 
   render(): JSX.Element {
+    console.log('Rendering YWWidget with defaultNodes: ', this.defaultNodes);
     return <App defaultNodes={this.defaultNodes} />;
   }
 }
