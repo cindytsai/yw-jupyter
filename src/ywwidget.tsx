@@ -15,6 +15,7 @@ import {
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
+import { NotebookPanel } from '@jupyterlab/notebook';
 
 const nodeTypes = {
   cell: CellNodeWidget
@@ -25,7 +26,7 @@ interface AppProps {
 }
 
 function App({ defaultNodes }: AppProps): JSX.Element {
-  console.log('defaultNodes: ', defaultNodes);
+  // defaultNodes only used for initial rendering
   return (
     <ReactFlowProvider>
       <ReactFlow defaultNodes={defaultNodes} nodeTypes={nodeTypes} fitView>
@@ -42,12 +43,14 @@ function App({ defaultNodes }: AppProps): JSX.Element {
  */
 export class YWWidget extends ReactWidget {
   readonly notebookID: string;
+  readonly notebook: NotebookPanel;
   defaultNodes: CellNode[];
 
-  constructor(notebookID: string) {
+  constructor(notebook: NotebookPanel) {
     super();
     this.addClass('jp-react-widget');
-    this.notebookID = notebookID;
+    this.notebook = notebook;
+    this.notebookID = notebook.id;
 
     // initialize default nodes
     // TODO: call
@@ -59,7 +62,8 @@ export class YWWidget extends ReactWidget {
     //     cells.forEach(cell => {
     //       console.log(cell.model.toJSON());
     //     });
-    console.log('Constructing YWWidget with notebookID: ', notebookID);
+    console.log('Constructing YWWidget with notebookID: ', this.notebookID);
+    console.log('Constructing YWWidget with notebook: ', this.notebook);
     this.defaultNodes = [
       {
         id: '1',
@@ -76,7 +80,6 @@ export class YWWidget extends ReactWidget {
   }
 
   render(): JSX.Element {
-    console.log('Rendering YWWidget with defaultNodes: ', this.defaultNodes);
     return <App defaultNodes={this.defaultNodes} />;
   }
 }
