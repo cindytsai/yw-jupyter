@@ -2,18 +2,22 @@ import { ReactWidget } from '@jupyterlab/ui-components';
 
 import { CellNodeWidget } from './cell-node-widget';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { CellNode } from './cell-node-widget';
 import { ToolBar } from './tool-bar';
+import { getLayoutedElements } from './layout';
 
 import {
   Background,
   Controls,
+  Edge,
   MiniMap,
   Panel,
   ReactFlow,
-  ReactFlowProvider
+  ReactFlowProvider,
+  useEdgesState,
+  useNodesState
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
@@ -25,15 +29,36 @@ const nodeTypes = {
 
 interface AppProps {
   defaultNodes: CellNode[];
+  defaultEdges: Edge[];
 }
 
-function App({ defaultNodes }: AppProps): JSX.Element {
+function App({ defaultNodes, defaultEdges }: AppProps): JSX.Element {
+  const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(defaultEdges);
+
+  const onLayout = useCallback(() => {
+    getLayoutedElements(nodes, edges).then(obj => {
+      setNodes(obj['nodes']);
+      setEdges(obj['edges']);
+      console.log(obj['nodes']);
+      console.log(obj['edges']);
+    });
+  }, [nodes, edges]);
+
+  // TODO: Calculate the initial layout on mount.
+
   // defaultNodes only used for initial rendering
   return (
     <ReactFlowProvider>
-      <ReactFlow defaultNodes={defaultNodes} nodeTypes={nodeTypes} fitView>
+      <ReactFlow
+        defaultNodes={nodes}
+        nodeTypes={nodeTypes}
+        fitView
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+      >
         <Panel>
-          <ToolBar />
+          <ToolBar onClick={onLayout} />
         </Panel>
         <MiniMap pannable zoomable />
         <Controls />
@@ -50,6 +75,7 @@ export class YWWidget extends ReactWidget {
   readonly notebookID: string;
   readonly notebook: NotebookPanel; // cannot be null
   defaultNodes: CellNode[] = [];
+  defaultEdges: Edge[] = [];
 
   constructor(notebook: NotebookPanel) {
     super();
@@ -80,6 +106,8 @@ export class YWWidget extends ReactWidget {
   }
 
   render(): JSX.Element {
-    return <App defaultNodes={this.defaultNodes} />;
+    return (
+      <App defaultNodes={this.defaultNodes} defaultEdges={this.defaultEdges} />
+    );
   }
 }
