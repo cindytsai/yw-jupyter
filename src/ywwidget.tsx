@@ -1,17 +1,16 @@
-import { ReactWidget } from '@jupyterlab/ui-components';
+import {ReactWidget} from '@jupyterlab/ui-components';
 
-import { CellNodeWidget } from './cell-node-widget';
+import {CellNode, CellNodeWidget} from './cell-node-widget';
 
-import React, { useCallback } from 'react';
-
-import { CellNode } from './cell-node-widget';
-import { ToolBar } from './tool-bar';
-import { getLayoutedElements } from './layout';
+import React, {useCallback} from 'react';
+import {ToolBar} from './tool-bar';
+import {getLayoutedElements} from './layout';
 
 import {
   Background,
   Controls,
   Edge,
+  MarkerType,
   MiniMap,
   Panel,
   ReactFlow,
@@ -21,7 +20,7 @@ import {
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
-import { NotebookPanel } from '@jupyterlab/notebook';
+import {NotebookPanel} from '@jupyterlab/notebook';
 
 const nodeTypes = {
   cell: CellNodeWidget
@@ -51,7 +50,10 @@ function App({ defaultNodes, defaultEdges }: AppProps): JSX.Element {
   return (
     <ReactFlowProvider>
       <ReactFlow
-        defaultNodes={nodes}
+        nodes={nodes}
+        edges={edges}
+        defaultNodes={defaultNodes}
+        defaultEdges={defaultEdges}
         nodeTypes={nodeTypes}
         fitView
         onNodesChange={onNodesChange}
@@ -102,6 +104,16 @@ export class YWWidget extends ReactWidget {
           status: 'not-execute'
         }
       });
+
+      // TODO: compute the edges through yw-generator
+      if (index > 0) {
+        this.defaultEdges.push({
+          id: `e${index - 1}-${index}`,
+          source: `${index - 1}`,
+          target: `${index}`,
+          markerEnd: {type: MarkerType.ArrowClosed}
+        })
+      }
     });
   }
 
