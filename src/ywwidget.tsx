@@ -45,6 +45,11 @@ function App({ defaultNodes, defaultEdges }: AppProps): JSX.Element {
     });
   }, [nodes, edges]);
 
+  const onDebug = () => {
+    console.log('[Debug] Nodes: ', nodes);
+    console.log('[Debug] Edges: ', edges);
+  }
+
   // TODO: Calculate the initial layout on mount.
 
   // defaultNodes only used for initial rendering
@@ -61,7 +66,7 @@ function App({ defaultNodes, defaultEdges }: AppProps): JSX.Element {
         onEdgesChange={onEdgesChange}
       >
         <Panel>
-          <ToolBar onClick={onLayout} />
+          <ToolBar onClickLayout={onLayout} onClickDebug={onDebug} />
         </Panel>
         <MiniMap pannable zoomable />
         <Controls />
