@@ -10,7 +10,7 @@ import {
   NodeHeaderDeleteAction
 } from './components/node-header';
 import CodeEditor from '@uiw/react-textarea-code-editor';
-import { Node, NodeProps } from '@xyflow/react';
+import { Handle, Node, NodeProps, Position } from '@xyflow/react';
 
 export interface CellNodeData extends Record<string, unknown> {
   exec_count: number;
@@ -45,6 +45,8 @@ export const CellNodeWidget = memo(
             }}
           />
         </div>
+        <Handle type="target" position={Position.Top} />
+        <Handle type="source" position={Position.Bottom} />
       </BaseNode>
     );
   }

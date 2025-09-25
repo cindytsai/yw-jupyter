@@ -15,11 +15,8 @@
     --text-xs--line-height: calc(1 / 0.75);
     --text-sm: 0.875rem;
     --text-sm--line-height: calc(1.25 / 0.875);
-    --text-3xl: 1.875rem;
-    --text-3xl--line-height: calc(2.25 / 1.875);
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
-    --font-weight-bold: 700;
     --tracking-widest: 0.1em;
     --default-transition-duration: 150ms;
     --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -556,9 +553,6 @@
     -webkit-user-select: none;
     user-select: none;
   }
-  .running {
-    animation-play-state: running;
-  }
   .hover\:bg-accent {
     &:hover {
       @media (hover: hover) {
@@ -685,71 +679,9 @@
       opacity: 50%;
     }
   }
-  .data-\[side\=bottom\]\:slide-in-from-top-2 {
-    &[data-side='bottom'] {
-      --tw-enter-translate-y: -0.5rem;
-    }
-  }
-  .data-\[side\=left\]\:slide-in-from-right-2 {
-    &[data-side='left'] {
-      --tw-enter-translate-x: 0.5rem;
-    }
-  }
-  .data-\[side\=right\]\:slide-in-from-left-2 {
-    &[data-side='right'] {
-      --tw-enter-translate-x: -0.5rem;
-    }
-  }
-  .data-\[side\=top\]\:slide-in-from-bottom-2 {
-    &[data-side='top'] {
-      --tw-enter-translate-y: 0.5rem;
-    }
-  }
-  .data-\[state\=closed\]\:animate-out {
-    &[data-state='closed'] {
-      animation-name: exit;
-      animation-duration: 150ms;
-      --tw-exit-opacity: initial;
-      --tw-exit-scale: initial;
-      --tw-exit-rotate: initial;
-      --tw-exit-translate-x: initial;
-      --tw-exit-translate-y: initial;
-    }
-  }
-  .data-\[state\=closed\]\:fade-out-0 {
-    &[data-state='closed'] {
-      --tw-exit-opacity: 0;
-    }
-  }
-  .data-\[state\=closed\]\:zoom-out-95 {
-    &[data-state='closed'] {
-      --tw-exit-scale: 0.95;
-    }
-  }
   .data-\[state\=open\]\:bg-accent {
     &[data-state='open'] {
       background-color: var(--accent);
-    }
-  }
-  .data-\[state\=open\]\:animate-in {
-    &[data-state='open'] {
-      animation-name: enter;
-      animation-duration: 150ms;
-      --tw-enter-opacity: initial;
-      --tw-enter-scale: initial;
-      --tw-enter-rotate: initial;
-      --tw-enter-translate-x: initial;
-      --tw-enter-translate-y: initial;
-    }
-  }
-  .data-\[state\=open\]\:fade-in-0 {
-    &[data-state='open'] {
-      --tw-enter-opacity: 0;
-    }
-  }
-  .data-\[state\=open\]\:zoom-in-95 {
-    &[data-state='open'] {
-      --tw-enter-scale: 0.95;
     }
   }
   .\[\&_svg\]\:pointer-events-none {
@@ -866,38 +798,6 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
-  }
-}
-@keyframes enter {
-  from {
-    opacity: var(--tw-enter-opacity, 1);
-    transform: translate3d(
-        var(--tw-enter-translate-x, 0),
-        var(--tw-enter-translate-y, 0),
-        0
-      )
-      scale3d(
-        var(--tw-enter-scale, 1),
-        var(--tw-enter-scale, 1),
-        var(--tw-enter-scale, 1)
-      )
-      rotate(var(--tw-enter-rotate, 0));
-  }
-}
-@keyframes exit {
-  to {
-    opacity: var(--tw-exit-opacity, 1);
-    transform: translate3d(
-        var(--tw-exit-translate-x, 0),
-        var(--tw-exit-translate-y, 0),
-        0
-      )
-      scale3d(
-        var(--tw-exit-scale, 1),
-        var(--tw-exit-scale, 1),
-        var(--tw-exit-scale, 1)
-      )
-      rotate(var(--tw-exit-rotate, 0));
   }
 }
 @property --tw-rotate-x {
