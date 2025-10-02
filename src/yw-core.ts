@@ -29,6 +29,23 @@ export function computeEdges(
     return [];
   }
 
+  // load input cells to Python, and create cell_list = [list of cell_i]
+  let py_cell_list = "";
+  input_cells.forEach((cell, index) => {
+    const py_cell = `cell_${index} = """${cell}"""\n`;  // TODO: might encounter issues if triple quotes are in the code
+    py_cell_list += `cell_${index},`;
+    kernel.requestExecute({
+      code: py_cell,
+      silent: false,
+      store_history: false
+    });
+  });
+  kernel.requestExecute({
+    code: "cell_list = [" + py_cell_list + "]\n",
+    silent: false,
+    store_history: false
+  });
+
   // call yw-core to compute edges silently
   const test_code =
     "import ast, sys\nast.parse('a=1')\na=1\n" +
@@ -48,8 +65,21 @@ export function computeEdges(
     }
   };
 
-  // TODO: clear the Python state
+  // clear the Python object (currently, python objects are hardcoded to cell_i and cell_list)
+  input_cells.forEach((cell, index) => {
+    kernel.requestExecute({
+      code: `del(cell_${index})`,
+      silent: false,
+      store_history: false
+    });
+  });
+  kernel.requestExecute({
+    code: "del(cell_list)\n",
+    silent: false,
+    store_history: false
+  });
 
+  // parse the output and return
   return parseYWCoreOutput(output);
 }
 
