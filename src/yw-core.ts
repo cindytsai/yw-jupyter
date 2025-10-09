@@ -8,6 +8,42 @@ export interface YWEdge {
   target: string;
 }
 
+const py_parse_yw_core: string = `
+def parse_yw_core(yw_records: list):
+    """Return a list of edges, the length is not necessary equal to the number of cells
+    [{"source": cell_number, "target": cell_number}]
+    """
+
+    def get_object_name(obj: dict, keys: list):
+        """Read dictionary's key-value pair, and concate and return the values as a list"""
+        object_list = []
+        
+        for key in keys:
+            if key in obj:
+                for o in list(obj[key]):
+                    object_list.append(o)
+    
+        return object_list
+
+    block_table = {}
+    edges = []
+    
+    for cell_index, obj in enumerate(yw_records):
+        # lookup input candidate in the table and create the edge
+        input_objects = get_object_name(obj, ["inputs"])
+        for io in input_objects:
+            if io in block_table:
+                edge = {"source": block_table[io], "target": cell_index}
+                edges.append(edge)
+        
+        # update block_table using output and output candidate
+        output_objects = get_object_name(obj, ["outputs", "output_candidates"])
+        for oo in output_objects:
+            block_table[oo] = cell_index
+    
+    return edges
+`;
+
 /**
  * Main API for compute the edges for the YesWorkflow visualization.
  * Must have a kernel with yw-core installed.
@@ -53,7 +89,9 @@ export function computeEdges(
   const is_upper_estimate = yw_core_estimate === 'Upper' ? 'True' : 'False';
   const py_yw_core =
     `from yw_core.yw_core import extract_records\n` +
-    `print(extract_records(cell_list, is_upper_estimate=${is_upper_estimate}))\n`;
+    `${py_parse_yw_core}\n` +
+    `yw_records = extract_records(cell_list, is_upper_estimate=${is_upper_estimate})\n` +
+    `print(parse_yw_core(yw_records))\n`;
   const exec_result = kernel.requestExecute({
     code: py_yw_core,
     silent: false,
@@ -70,6 +108,7 @@ export function computeEdges(
   };
 
   // clear the Python object (currently, python objects are hardcoded to cell_i and cell_list)
+  // TODO: can I make this prettier?
   input_cells.forEach((cell, index) => {
     kernel.requestExecute({
       code: `del(cell_${index})`,
@@ -79,6 +118,11 @@ export function computeEdges(
   });
   kernel.requestExecute({
     code: 'del(cell_list)\n',
+    silent: false,
+    store_history: false
+  });
+  kernel.requestExecute({
+    code: 'del(extract_records);del(parse_yw_core)\n',
     silent: false,
     store_history: false
   });
