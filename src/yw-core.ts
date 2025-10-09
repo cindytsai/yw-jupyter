@@ -54,11 +54,11 @@ def parse_yw_core(yw_records: list):
  * @param yw_core_estimate "Upper" or "Lower" estimate, default to "Upper"
  * @returns YWEdge[] computed by yw-core
  */
-export function computeEdges(
+export async function computeEdges(
   kernel: Kernel.IKernelConnection | undefined | null,
   input_cells: string[],
   yw_core_estimate: 'Upper' | 'Lower' = 'Upper'
-): YWEdge[] {
+): Promise<YWEdge[]> {
   if (!kernel) {
     Notification.error(
       'No kernel connection available to compute edges.\n' +
@@ -93,17 +93,18 @@ export function computeEdges(
     `yw_records = extract_records(cell_list, is_upper_estimate=${is_upper_estimate})\n` +
     `print(parse_yw_core(yw_records))\n`;
   const exec_result = kernel.requestExecute({
-    code: py_yw_core,
-    silent: false,
-    store_history: false
+      code: py_yw_core,
+      silent: false,
+      store_history: false
   });
-  console.log('[computeEdges] ', exec_result);
   let output: string | string[] | null | undefined = null;
   exec_result.onIOPub = (msg: KernelMessage.IIOPubMessage) => {
     if (msg.header.msg_type === 'stream') {
       const content = msg.content as IStream;
       output = content.text;
-      console.log('[computeEdges] stream output: ', output);
+
+      // parse the output and return
+      parseYWCoreOutput(output);
     }
   };
 
@@ -127,16 +128,35 @@ export function computeEdges(
     store_history: false
   });
 
-  // parse the output and return
-  return parseYWCoreOutput(output);
+  return [{ id: 'e0-1', source: '0', target: '1' }];
 }
 
 /**
- * // TODO: compute the edges using yw-core
- * @param output
+ * Parse the output from yw-core and parse_yw_core Python function,
+ * and convert it to YWEdge.
+ * @param output_raw
  */
 function parseYWCoreOutput(
-  output: string | string[] | null | undefined
+  output_raw: string | string[] | null | undefined
 ): YWEdge[] {
-  return [{ id: 'e0-1', source: '0', target: '1' }];
+  console.log('parseYWCoreOutput: ', output_raw);
+  console.log('parseYWCoreOutput type: ', typeof output_raw);
+  if (!output_raw) {
+    let output: string | null | undefined;
+    if (Array.isArray(output_raw)) {
+      output = output_raw.join(" ");
+    } else {
+      output = output_raw;
+    }
+    output = output?.replace(/'/g, '"');
+    if (typeof output === 'string') {
+      const json_output = JSON.parse(output);
+      console.log(json_output);
+      return []; // TODO: convert json_output to YWEdge[]
+    } else {
+      return [];
+    }
+  } else {
+    return [];
+  }
 }

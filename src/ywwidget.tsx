@@ -103,7 +103,7 @@ export class YWWidget extends ReactWidget {
       this.defaultNodes.push({
         id: `${index}`,
         type: 'cell',
-        position: { x: 0, y: 0 },
+        position: {x: 0, y: 0},
         data: {
           exec_count: 0,
           header: `Cell ${index}`,
@@ -122,17 +122,19 @@ export class YWWidget extends ReactWidget {
 
     // compute the edges using yw-core
     // TODO: without edges the layout is probably not correct.
-    const edges = computeEdges(
+    computeEdges(
       this.notebook.sessionContext.session?.kernel,
       ywCoreCodeCellList
-    );
-    edges.forEach(edge => {
-      this.defaultEdges.push({
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        type: 'smoothstep',
-        markerEnd: { type: MarkerType.ArrowClosed }
+    ).then((edges) => {
+      console.log('Computed edges: ', edges);
+      edges.forEach(edge => {
+        this.defaultEdges.push({
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          type: 'smoothstep',
+          markerEnd: {type: MarkerType.ArrowClosed}
+        });
       });
     });
   }
