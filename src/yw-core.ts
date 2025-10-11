@@ -141,23 +141,19 @@ function parseYWCoreOutput(
   output_raw: string | string[] | null | undefined
 ): YWEdge[] {
   if (output_raw) {
-    let output: string | null | undefined;
+    let output: string;
     if (Array.isArray(output_raw)) {
       output = output_raw.join(" ");
     } else {
       output = output_raw;
     }
     output = output?.replace(/'/g, '"');
-    if (typeof output === 'string') {
-      const json_output = JSON.parse(output);
-      let edges: YWEdge[] = [];
-      json_output.forEach((edge: YWEdge) => {
-        edges.push({ id: `e${edge.source}-${edge.target}`, source: `${edge.source}`, target: `${edge.target}` });
-      });
-      return edges;
-    } else {
-      return [];
-    }
+    const json_output = JSON.parse(output);
+    let edges: YWEdge[] = [];
+    json_output.forEach((edge: YWEdge) => {
+      edges.push({ id: `e${edge.source}-${edge.target}`, source: `${edge.source}`, target: `${edge.target}` });
+    });
+    return edges;
   } else {
     return [];
   }
