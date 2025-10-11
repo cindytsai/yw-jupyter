@@ -93,7 +93,7 @@ export async function computeEdges(
     `yw_records = extract_records(cell_list, is_upper_estimate=${is_upper_estimate})\n` +
     `print(parse_yw_core(yw_records))\n`;
 
-  return new Promise<YWEdge[]>((resolve) => {
+  return new Promise<YWEdge[]>(resolve => {
     const exec_result = kernel.requestExecute({
       code: py_yw_core,
       silent: false,
@@ -142,7 +142,7 @@ function parseYWCoreOutput(
   if (output_raw) {
     let output: string;
     if (Array.isArray(output_raw)) {
-      output = output_raw.join(" ");
+      output = output_raw.join(' ');
     } else {
       output = output_raw;
     }
@@ -150,7 +150,11 @@ function parseYWCoreOutput(
     const json_output = JSON.parse(output);
     let edges: YWEdge[] = [];
     json_output.forEach((edge: YWEdge) => {
-      edges.push({ id: `e${edge.source}-${edge.target}`, source: `${edge.source}`, target: `${edge.target}` });
+      edges.push({
+        id: `e${edge.source}-${edge.target}`,
+        source: `${edge.source}`,
+        target: `${edge.target}`
+      });
     });
     return edges;
   } else {

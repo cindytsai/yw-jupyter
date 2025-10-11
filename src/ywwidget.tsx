@@ -37,7 +37,7 @@ function App({ ywwidget }: AppProps): JSX.Element {
 
   // Update edges when ywwidget.Edges changes
   useEffect(() => {
-    console.log("[App] useEffect triggered by ywwidget.Edges change");
+    console.log('[App] useEffect triggered by ywwidget.Edges change');
   }, [ywwidget.Edges]);
 
   // Layout button handler
@@ -70,7 +70,10 @@ function App({ ywwidget }: AppProps): JSX.Element {
         onNodesChange={onNodesChange}
       >
         <Panel>
-          <ToolBar onClickLayout={onLayoutButton} onClickDebug={onDebugButton} />
+          <ToolBar
+            onClickLayout={onLayoutButton}
+            onClickDebug={onDebugButton}
+          />
         </Panel>
         <MiniMap pannable zoomable />
         <Controls />
@@ -107,7 +110,7 @@ export class YWWidget extends ReactWidget {
       this.defaultNodes.push({
         id: `${index}`,
         type: 'cell',
-        position: {x: 0, y: 0},
+        position: { x: 0, y: 0 },
         data: {
           exec_count: 0,
           header: `Cell ${index}`,
@@ -128,7 +131,7 @@ export class YWWidget extends ReactWidget {
     computeEdges(
       this.notebook.sessionContext.session?.kernel,
       ywCoreCodeCellList
-    ).then((edges) => {
+    ).then(edges => {
       console.log('[YWWidget] Computed edges: ', edges);
       edges.forEach(edge => {
         this.Edges.push({
@@ -136,17 +139,15 @@ export class YWWidget extends ReactWidget {
           source: edge.source,
           target: edge.target,
           type: 'smoothstep',
-          markerEnd: {type: MarkerType.ArrowClosed}
+          markerEnd: { type: MarkerType.ArrowClosed }
         });
       });
     });
-    console.log("[YWWidget] end of constructor");
+    console.log('[YWWidget] end of constructor');
   }
 
   render(): JSX.Element {
-    console.log("[YWWidget] render()");
-    return (
-      <App ywwidget={this} />
-    );
+    console.log('[YWWidget] render()');
+    return <App ywwidget={this} />;
   }
 }
