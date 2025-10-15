@@ -20,7 +20,7 @@ import {
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
-import { NotebookPanel } from '@jupyterlab/notebook';
+import {NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
 import { computeEdges } from './yw-core';
 
 const nodeTypes = {
@@ -160,6 +160,7 @@ export class YWWidget extends ReactWidget {
 
   focusCell(cellIndex: number) {
     this.notebook.content.activeCellIndex = cellIndex;
+    NotebookActions.focusActiveCell(this.notebook.content);
     console.log('[YWWidget] focusCell: ', cellIndex);
   }
 
