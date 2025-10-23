@@ -164,6 +164,15 @@ export class YWWidget extends ReactWidget {
     console.log('[YWWidget] focusCell: ', cellIndex);
   }
 
+  focusYWNode(cellIndex: number | undefined) {
+    console.log('[YWWidget] focusYWNode: ', cellIndex);
+    // find the node with the given ID
+    const node = this.defaultNodes.find(n => n.data.order_index === cellIndex);
+    if (node) {
+      console.log('[YWWidget] Found node: ', node);
+    }
+  }
+
   render(): JSX.Element {
     console.log('[YWWidget] render()');
     return <App ywwidget={this} />;

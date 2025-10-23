@@ -95,7 +95,10 @@ function activate(
     icon: ywIcon,
     isVisible: () => notebookTracker.activeCell?.model.type === 'code',
     execute: () => {
-      console.log('Go to node command executed');
+      const ywWidgetID = 'ywwidget-' + notebookTracker.currentWidget?.id;
+      const ywWidget = ywWidgetTracker.find(widget => widget.id === ywWidgetID);
+      const cellIndex = notebookTracker.currentWidget?.content.activeCellIndex;
+      ywWidget?.content.focusYWNode(cellIndex);
     }
   });
 }
