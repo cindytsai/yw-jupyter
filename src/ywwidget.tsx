@@ -16,7 +16,8 @@ import {
   ReactFlow,
   ReactFlowProvider,
   useEdgesState,
-  useNodesState
+  useNodesState,
+  useReactFlow
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
@@ -31,9 +32,16 @@ interface AppProps {
   ywwidget: YWWidget;
 }
 
+type ReactFlowControllerType = {
+  focusAndSelectNode?: (nodeID: string) => void;
+};
+
+const reactflowController: ReactFlowControllerType = {};
+
 function App({ ywwidget }: AppProps): JSX.Element {
   const [nodes, setNodes, onNodesChange] = useNodesState(ywwidget.defaultNodes);
   const [edges, setEdges] = useEdgesState<Edge>([]);
+  const {getNode, setCenter} = useReactFlow();
 
   // On node double click handler
   const onNodeDoubleClick = (event: React.MouseEvent, node: CellNode) => {
@@ -62,6 +70,31 @@ function App({ ywwidget }: AppProps): JSX.Element {
     console.log('[Debug] Nodes: ', nodes);
     console.log('[Debug] Edges: ', edges);
   };
+
+  // focus and select node and expose the function
+  const focusAndSelectNode = useCallback(
+    (nodeID: string) => {
+      const node = getNode(nodeID);
+      if (node) {
+        const zoom = 1.5;
+        setCenter(
+          node.position.x + (node.measured?.width || 0) / 2,
+          node.position.y + (node.measured?.height || 0) / 2,
+          {zoom: zoom, duration: 800},
+        );
+        // setNodes((nodes) => nodes.map((n) => {...n}))
+      } else {
+        return
+      }
+    },
+    [getNode, setCenter, setNodes]
+  );
+  useEffect(() => {
+    reactflowController.focusAndSelectNode = focusAndSelectNode;
+    return () => {
+      delete reactflowController.focusAndSelectNode;
+    }
+  }, []);
 
   // TODO: Calculate the initial layout on mount.
 
@@ -170,6 +203,7 @@ export class YWWidget extends ReactWidget {
     const node = this.defaultNodes.find(n => n.data.order_index === cellIndex);
     if (node) {
       console.log('[YWWidget] Found node: ', node);
+      reactflowController.focusAndSelectNode?.(node.id);
     }
   }
 
