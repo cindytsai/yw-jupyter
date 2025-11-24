@@ -188,8 +188,12 @@ export class YWWidget extends ReactWidget {
 
         // prepare code cell for yw-core
         let cellMeta = cell.model.toJSON();
+        const nodeID = `${codeCellIndex}`;
+        const onContentChange = (env: ChangeEvent<HTMLTextAreaElement>) => {
+          this.onNodeContentChanged(nodeID, env.target.value);
+        }
         this.Nodes.push({
-          id: `${codeCellIndex}`,
+          id: nodeID,
           type: 'cell',
           position: { x: 0, y: 0 },
           data: {
@@ -197,9 +201,7 @@ export class YWWidget extends ReactWidget {
             exec_count: 0,
             header: `Cell ${index + 1}`,
             code_block: cellMeta.source,
-            on_content_change: (env: ChangeEvent<HTMLTextAreaElement>) => {
-              this.onNodeContentChanged(`${codeCellIndex}`, env.target.value);
-            },
+            on_content_change: onContentChange,
             status: 'not-execute'
           }
         });
