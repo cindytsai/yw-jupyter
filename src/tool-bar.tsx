@@ -1,6 +1,11 @@
 import React from 'react';
 import { AlignVerticalJustifyStart, Bug } from 'lucide-react';
 import { Button } from './components/ui/button';
+import {
+  NativeSelect,
+  NativeSelectOption,
+  NativeSelectOptGroup
+} from './components/ui/native-select';
 
 export interface ToolBarProps {
   onClickLayout?: () => void;
@@ -24,6 +29,16 @@ export function ToolBar({
           <Bug />
           Debug
         </Button>
+      </div>
+      <div>
+        <NativeSelect>
+          <NativeSelectOptGroup label="Static Analysis">
+            <NativeSelectOption value="Lower">
+              Lower (Default)
+            </NativeSelectOption>
+            <NativeSelectOption value="Upper">Upper</NativeSelectOption>
+          </NativeSelectOptGroup>
+        </NativeSelect>
       </div>
     </div>
   );
