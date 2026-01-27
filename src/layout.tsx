@@ -55,7 +55,7 @@ export const getLayoutedElements = (nodes: CellNode[], edges: Edge[]) => {
         id: edge.id,
         source: edge.sources[0],
         target: edge.targets[0],
-        type: 'bezier',
+        type: 'default',
         markerEnd: {
           type: MarkerType.ArrowClosed
         }

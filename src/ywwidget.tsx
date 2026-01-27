@@ -230,7 +230,7 @@ export class YWWidget extends ReactWidget {
           id: edge.id,
           source: edge.source,
           target: edge.target,
-          type: 'bezier',
+          type: 'default',
           markerEnd: { type: MarkerType.ArrowClosed }
         });
       });
