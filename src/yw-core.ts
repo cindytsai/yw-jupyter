@@ -1,6 +1,7 @@
 import { Kernel, KernelMessage } from '@jupyterlab/services';
 import { Notification } from '@jupyterlab/apputils';
 import { IStream } from '@jupyterlab/nbformat';
+import { CellNode } from './cell-node-widget';
 
 export interface YWEdge {
   id: string;
@@ -56,7 +57,7 @@ def parse_yw_core(yw_records: list):
  */
 export async function computeEdges(
   kernel: Kernel.IKernelConnection | undefined | null,
-  input_cells: string[],
+  input_cells: CellNode[],
   yw_core_estimate: 'Upper' | 'Lower' = 'Lower'
 ): Promise<YWEdge[]> {
   if (!kernel) {
@@ -71,7 +72,14 @@ export async function computeEdges(
   // Load input cells to Python
   let py_cell_list = '';
   for (let index = 0; index < input_cells.length; index++) {
-    const py_cell = `cell_${index} = """${input_cells[index]}"""\n`;
+    let code_content: string = '';
+    const code_block = input_cells[index].data.code_block;
+    if (typeof code_block === 'string') {
+      code_content = code_block;
+    } else {
+      code_content = code_block.join('\n');
+    }
+    const py_cell = `cell_${index} = """${code_content}"""\n`;
     py_cell_list += `cell_${index},`;
     await kernel.requestExecute({
       code: py_cell,

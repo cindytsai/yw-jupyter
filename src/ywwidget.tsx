@@ -186,7 +186,6 @@ export class YWWidget extends ReactWidget {
 
     // initialize default nodes and prepare it to list for yw-core
     // and register to listen to code cell content changes
-    const ywCoreCodeCellList: string[] = [];
     let codeCellIndex = 0;
     this.notebook.content.widgets.forEach((cell, index) => {
       if (cell.model.type !== 'code') {
@@ -217,32 +216,24 @@ export class YWWidget extends ReactWidget {
           }
         });
         codeCellIndex += 1;
-
-        // join string array to string and append it to list
-        if (typeof cellMeta.source === 'string') {
-          ywCoreCodeCellList.push(cellMeta.source);
-        } else {
-          ywCoreCodeCellList.push(cellMeta.source.join('\n'));
-        }
       }
     });
 
     // compute the edges using yw-core
-    computeEdges(
-      this.notebook.sessionContext.session?.kernel,
-      ywCoreCodeCellList
-    ).then(edges => {
-      console.log('[YWWidget] Computed edges: ', edges);
-      edges.forEach(edge => {
-        this.Edges.push({
-          id: edge.id,
-          source: edge.source,
-          target: edge.target,
-          type: 'default',
-          markerEnd: { type: MarkerType.ArrowClosed }
+    computeEdges(this.notebook.sessionContext.session?.kernel, this.Nodes).then(
+      edges => {
+        console.log('[YWWidget] Computed edges: ', edges);
+        edges.forEach(edge => {
+          this.Edges.push({
+            id: edge.id,
+            source: edge.source,
+            target: edge.target,
+            type: 'default',
+            markerEnd: { type: MarkerType.ArrowClosed }
+          });
         });
-      });
-    });
+      }
+    );
     console.log('[YWWidget] end of constructor');
   }
 
