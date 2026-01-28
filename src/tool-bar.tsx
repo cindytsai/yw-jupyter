@@ -8,6 +8,7 @@ import {
 } from './components/ui/native-select';
 
 export interface ToolBarProps {
+  onLayoutSelectionChange?: (event: ChangeEvent<HTMLSelectElement>) => void;
   onClickLayout?: () => void;
 }
 
@@ -15,14 +16,14 @@ export interface DebugToolBarProps {
   onClickDebug?: () => void;
 }
 
-export function ToolBar({ onClickLayout }: ToolBarProps): JSX.Element {
-  const handleOnChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    console.log('[ToolBar] Selected value: ', event.target.value);
-  };
+export function ToolBar({
+  onLayoutSelectionChange,
+  onClickLayout
+}: ToolBarProps): JSX.Element {
   return (
     <div className="flex flex-wrap items-center gap-2 md:flex-row">
       <div>
-        <NativeSelect defaultValue="Lower" onChange={handleOnChange}>
+        <NativeSelect defaultValue="Lower" onChange={onLayoutSelectionChange}>
           <NativeSelectOptGroup label="Static Analysis">
             <NativeSelectOption value="Lower">Lower</NativeSelectOption>
             <NativeSelectOption value="Upper">Upper</NativeSelectOption>

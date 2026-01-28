@@ -56,6 +56,11 @@ function App({ ywwidget }: AppProps): JSX.Element {
     setEdges(ywwidget.Edges);
   }, [ywwidget.Edges]);
 
+  // Layout (edge compute) selection change handler
+  const onLayoutSelectionChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    console.log('[ToolBar] Selected value: ', event.target.value);
+  };
+
   // Layout button handler
   const onLayoutButton = useCallback(() => {
     getLayoutedElements(nodes, edges).then(obj => {
@@ -138,7 +143,10 @@ function App({ ywwidget }: AppProps): JSX.Element {
       onNodeDoubleClick={onNodeDoubleClick}
     >
       <Panel position="top-left">
-        <ToolBar onClickLayout={onLayoutButton} />
+        <ToolBar
+          onLayoutSelectionChange={onLayoutSelectionChange}
+          onClickLayout={onLayoutButton}
+        />
       </Panel>
       <Panel position="top-right">
         <DebugToolBar onClickDebug={onDebugButton} />
