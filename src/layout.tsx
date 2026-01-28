@@ -50,15 +50,6 @@ export const getLayoutedElements = (nodes: CellNode[], edges: Edge[]) => {
         // React Flow expects a position property on the node instead of `x`
         // and `y` fields.
         position: { x: node.x, y: node.y }
-      })),
-      edges: layoutedGraph.edges.map(edge => ({
-        id: edge.id,
-        source: edge.sources[0],
-        target: edge.targets[0],
-        type: 'default',
-        markerEnd: {
-          type: MarkerType.ArrowClosed
-        }
       }))
     }))
     .catch(console.error);

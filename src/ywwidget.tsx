@@ -97,9 +97,8 @@ function App({ ywwidget }: AppProps): JSX.Element {
   const onLayoutButton = useCallback(() => {
     getLayoutedElements(nodes, edges).then(obj => {
       setNodes(obj['nodes']);
-      setEdges(obj['edges']);
-      console.log(obj['nodes']);
-      console.log(obj['edges']);
+      console.log('[onLayoutButton] Nodes:', obj['nodes']);
+      console.log('[onLayoutButton] Edges:', edges);
     });
   }, [nodes, edges]);
 
