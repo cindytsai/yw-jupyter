@@ -85,6 +85,10 @@ function App({ ywwidget }: AppProps): JSX.Element {
             markerEnd: MarkerType.ArrowClosed
           }))
         );
+
+        getLayoutedElements(nodes, computedEdges).then(obj => {
+          setNodes(obj['nodes']);
+        });
       });
     }
   };
