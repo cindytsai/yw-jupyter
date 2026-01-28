@@ -59,6 +59,24 @@ function App({ ywwidget }: AppProps): JSX.Element {
   // Layout (edge compute) selection change handler
   const onLayoutSelectionChange = (event: ChangeEvent<HTMLSelectElement>) => {
     console.log('[ToolBar] Selected value: ', event.target.value);
+    if (event.target.value === 'Lower' || event.target.value === 'Upper') {
+      computeEdges(
+        ywwidget.notebook.sessionContext.session?.kernel,
+        ywwidget.Nodes,
+        event.target.value
+      ).then(edges => {
+        ywwidget.Edges = [];
+        edges.forEach(edge => {
+          ywwidget.Edges.push({
+            id: edge.id,
+            source: edge.source,
+            target: edge.target,
+            type: 'default',
+            markerEnd: { type: MarkerType.ArrowClosed }
+          });
+        });
+      });
+    }
   };
 
   // Layout button handler
