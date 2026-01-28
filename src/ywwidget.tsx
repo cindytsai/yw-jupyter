@@ -51,11 +51,21 @@ function App({ ywwidget }: AppProps): JSX.Element {
     ywwidget.focusCell(node.data.order_index);
   };
 
-  // Update edges when ywwidget.Edges changes from outside(?)
+  // Compute the edges on first launch
   useEffect(() => {
-    console.log('[App] useEffect triggered by ywwidget.Edges change');
-    setEdges(ywwidget.Edges);
-  }, [ywwidget.Edges]);
+    console.log('[App] Compute edges on first launch');
+    computeEdges(ywwidget.notebook.sessionContext.session?.kernel, nodes).then(
+      computedEdges => {
+        setEdges(
+          computedEdges.map(edge => ({
+            ...edge,
+            type: 'default',
+            markerEnd: MarkerType.ArrowClosed
+          }))
+        );
+      }
+    );
+  }, []);
 
   // Layout (edge compute) selection change handler
   // TODO: avoid nested then()
@@ -242,22 +252,6 @@ export class YWWidget extends ReactWidget {
         codeCellIndex += 1;
       }
     });
-
-    // compute the edges using yw-core
-    computeEdges(this.notebook.sessionContext.session?.kernel, this.Nodes).then(
-      edges => {
-        console.log('[YWWidget] Computed edges: ', edges);
-        edges.forEach(edge => {
-          this.Edges.push({
-            id: edge.id,
-            source: edge.source,
-            target: edge.target,
-            type: 'default',
-            markerEnd: { type: MarkerType.ArrowClosed }
-          });
-        });
-      }
-    );
     console.log('[YWWidget] end of constructor');
   }
 
