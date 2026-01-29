@@ -47,7 +47,7 @@ function activate(
   const ywCommandOpen: string = 'jupyter-yesworkflow:open';
   const ywCommandGoToNode: string = 'jupyter-yesworkflow:go-to-node';
 
-  // resgister yw open command
+  // register yw open command
   app.commands.addCommand(ywCommandOpen, {
     label: 'YesWorkflow: Open',
     caption: 'Open YesWorkflow visualization',

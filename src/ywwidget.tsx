@@ -28,7 +28,7 @@ const nodeTypes = {
   cell: CellNodeWidget
 };
 
-interface AppProps {
+interface IAppProps {
   ywwidget: YWWidget;
 }
 
@@ -39,7 +39,7 @@ type ReactFlowControllerType = {
 
 const reactflowController: ReactFlowControllerType = {};
 
-function App({ ywwidget }: AppProps): JSX.Element {
+function App({ ywwidget }: IAppProps): JSX.Element {
   // ywwidget.Nodes are only for initialization
   // especially edges, it should be internal to the widget
   const [nodes, setNodes, onNodesChange] = useNodesState(ywwidget.Nodes);
@@ -199,7 +199,7 @@ function App({ ywwidget }: AppProps): JSX.Element {
   );
 }
 
-function AppWrapper({ ywwidget }: AppProps): JSX.Element {
+function AppWrapper({ ywwidget }: IAppProps): JSX.Element {
   return (
     <ReactFlowProvider>
       <App ywwidget={ywwidget} />
@@ -237,7 +237,7 @@ export class YWWidget extends ReactWidget {
         }, this);
 
         // prepare code cell for yw-core
-        let cellMeta = cell.model.toJSON();
+        const cellMeta = cell.model.toJSON();
         const nodeID = `${codeCellIndex}`;
         const onContentChange = (env: ChangeEvent<HTMLTextAreaElement>) => {
           this.onNodeContentChanged(nodeID, env.target.value);
@@ -265,7 +265,7 @@ export class YWWidget extends ReactWidget {
     const cells = this.notebook.content.widgets.filter(cell => {
       return cell.model.type === 'code';
     });
-    let source = cells[cellIndex].model.toJSON().source;
+    const source = cells[cellIndex].model.toJSON().source;
     reactflowController.updateCellNodeContent?.(`${cellIndex}`, source);
   }
 

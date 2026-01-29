@@ -3,7 +3,7 @@ import { Notification } from '@jupyterlab/apputils';
 import { IStream } from '@jupyterlab/nbformat';
 import { CellNode } from './cell-node-widget';
 
-export interface YWEdge {
+export interface IYWEdge {
   id: string;
   source: string;
   target: string;
@@ -16,7 +16,7 @@ def parse_yw_core(yw_records: list):
     """
 
     def get_object_name(obj: dict, keys: list):
-        """Read dictionary's key-value pair, and concate and return the values as a list"""
+        """Read dictionary's key-value pair, and concat and return the values as a list"""
         object_list = []
         
         for key in keys:
@@ -59,7 +59,7 @@ export async function computeEdges(
   kernel: Kernel.IKernelConnection | undefined | null,
   input_cells: CellNode[],
   yw_core_estimate: string = 'Lower'
-): Promise<YWEdge[]> {
+): Promise<IYWEdge[]> {
   if (!kernel) {
     Notification.error(
       'No kernel connection available to compute edges.\n' +
@@ -96,12 +96,12 @@ export async function computeEdges(
   // call yw-core to compute edges silently
   const is_upper_estimate = yw_core_estimate === 'Upper' ? 'True' : 'False';
   const py_yw_core =
-    `from yw_core.yw_core import extract_records\n` +
+    'from yw_core.yw_core import extract_records\n' +
     `${py_parse_yw_core}\n` +
     `yw_records = extract_records(cell_list, is_upper_estimate=${is_upper_estimate})\n` +
-    `print(parse_yw_core(yw_records))\n`;
+    'print(parse_yw_core(yw_records))\n';
 
-  return new Promise<YWEdge[]>(resolve => {
+  return new Promise<IYWEdge[]>(resolve => {
     const exec_result = kernel.requestExecute({
       code: py_yw_core,
       silent: false,
@@ -147,7 +147,7 @@ export async function computeEdges(
  */
 function parseYWCoreOutput(
   output_raw: string | string[] | null | undefined
-): YWEdge[] {
+): IYWEdge[] {
   if (output_raw) {
     let output: string;
     if (Array.isArray(output_raw)) {
@@ -157,8 +157,8 @@ function parseYWCoreOutput(
     }
     output = output?.replace(/'/g, '"');
     const json_output = JSON.parse(output);
-    let edges: YWEdge[] = [];
-    json_output.forEach((edge: YWEdge) => {
+    const edges: IYWEdge[] = [];
+    json_output.forEach((edge: IYWEdge) => {
       edges.push({
         id: `e${edge.source}-${edge.target}`,
         source: `${edge.source}`,

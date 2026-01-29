@@ -7,19 +7,19 @@ import {
   NativeSelectOptGroup
 } from './components/ui/native-select';
 
-export interface ToolBarProps {
+export interface IToolBarProps {
   onLayoutSelectionChange?: (event: ChangeEvent<HTMLSelectElement>) => void;
   onClickLayout?: () => void;
 }
 
-export interface DebugToolBarProps {
+export interface IDebugToolBarProps {
   onClickDebug?: () => void;
 }
 
 export function ToolBar({
   onLayoutSelectionChange,
   onClickLayout
-}: ToolBarProps): JSX.Element {
+}: IToolBarProps): JSX.Element {
   return (
     <div className="flex flex-wrap items-center gap-2 md:flex-row">
       <div>
@@ -40,7 +40,9 @@ export function ToolBar({
   );
 }
 
-export function DebugToolBar({ onClickDebug }: DebugToolBarProps): JSX.Element {
+export function DebugToolBar({
+  onClickDebug
+}: IDebugToolBarProps): JSX.Element {
   return (
     <div>
       <Button variant="outline" size="sm" onClick={onClickDebug}>

@@ -12,7 +12,7 @@ import {
 import CodeEditor from '@uiw/react-textarea-code-editor';
 import { Handle, Node, NodeProps, Position } from '@xyflow/react';
 
-export interface CellNodeData extends Record<string, unknown> {
+export interface ICellNodeData extends Record<string, unknown> {
   order_index: number;
   exec_count: number;
   header: string;
@@ -21,7 +21,7 @@ export interface CellNodeData extends Record<string, unknown> {
   status: 'not-execute' | 'executing' | 'executed';
 }
 
-export type CellNode = Node<CellNodeData>;
+export type CellNode = Node<ICellNodeData>;
 
 export const CellNodeWidget = memo(
   ({ data, selected }: NodeProps<CellNode>) => {
