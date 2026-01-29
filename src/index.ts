@@ -47,6 +47,19 @@ function activate(
   const ywCommandOpen: string = 'jupyter-yesworkflow:open';
   const ywCommandGoToNode: string = 'jupyter-yesworkflow:go-to-node';
 
+  function createYWWidget(
+    notebook: NotebookPanel,
+    widget: MainAreaWidget<YWWidget> | undefined
+  ) {
+    const content = new YWWidget(notebook);
+    widget = new MainAreaWidget({ content });
+    widget.id = 'ywwidget-' + notebook.id;
+    widget.title.label = 'YW: ' + notebook.title.label;
+    widget.title.icon = ywIcon;
+    widget.title.closable = true;
+    return widget;
+  }
+
   // register yw open command
   app.commands.addCommand(ywCommandOpen, {
     label: 'YesWorkflow: Open',
@@ -69,13 +82,7 @@ function activate(
         }
       );
       if (widget === undefined) {
-        const content = new YWWidget(notebook);
-        widget = new MainAreaWidget({ content });
-        widget.id = 'ywwidget-' + notebook.id;
-        widget.title.label = 'YW: ' + notebook.title.label;
-        widget.title.icon = ywIcon;
-        widget.title.closable = true;
-
+        widget = createYWWidget(notebook, widget);
         ywWidgetTracker.add(widget).catch(error => {
           console.error('Unable to add ywwidget to tracker: ' + error);
         });
@@ -96,7 +103,16 @@ function activate(
     isVisible: () => notebookTracker.activeCell?.model.type === 'code',
     execute: () => {
       const ywWidgetID = 'ywwidget-' + notebookTracker.currentWidget?.id;
-      const ywWidget = ywWidgetTracker.find(widget => widget.id === ywWidgetID);
+      let ywWidget = ywWidgetTracker.find(widget => widget.id === ywWidgetID);
+      if (ywWidget === undefined && notebookTracker.currentWidget) {
+        ywWidget = createYWWidget(notebookTracker.currentWidget, ywWidget);
+        ywWidgetTracker.add(ywWidget).catch(error => {
+          console.error('Unable to add ywwidget to tracker: ' + error);
+        });
+      }
+      if (ywWidget !== undefined && !ywWidget?.isAttached) {
+        app.shell.add(ywWidget, 'main', { mode: 'split-right' });
+      }
       const cellIndex = notebookTracker.currentWidget?.content.activeCellIndex;
       ywWidget?.content.focusYWNode(cellIndex);
     }
