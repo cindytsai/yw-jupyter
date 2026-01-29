@@ -3,7 +3,7 @@ import { ReactWidget } from '@jupyterlab/ui-components';
 import { CellNode, CellNodeWidget } from './cell-node-widget';
 
 import React, { ChangeEvent, useCallback, useEffect } from 'react';
-import { ToolBar } from './tool-bar';
+import { DebugToolBar, ToolBar } from './tool-bar';
 import { getLayoutedElements } from './layout';
 
 import {
@@ -28,7 +28,7 @@ const nodeTypes = {
   cell: CellNodeWidget
 };
 
-interface AppProps {
+interface IAppProps {
   ywwidget: YWWidget;
 }
 
@@ -39,7 +39,9 @@ type ReactFlowControllerType = {
 
 const reactflowController: ReactFlowControllerType = {};
 
-function App({ ywwidget }: AppProps): JSX.Element {
+function App({ ywwidget }: IAppProps): JSX.Element {
+  // ywwidget.Nodes are only for initialization
+  // especially edges, it should be internal to the widget
   const [nodes, setNodes, onNodesChange] = useNodesState(ywwidget.Nodes);
   const [edges, setEdges] = useEdgesState<Edge>([]);
   const { getNode, setCenter } = useReactFlow();
@@ -50,19 +52,63 @@ function App({ ywwidget }: AppProps): JSX.Element {
     ywwidget.focusCell(node.data.order_index);
   };
 
-  // Update edges when ywwidget.Edges changes
+  // Compute the edges on first launch
   useEffect(() => {
-    console.log('[App] useEffect triggered by ywwidget.Edges change');
-    setEdges(ywwidget.Edges);
-  }, [ywwidget.Edges]);
+    console.log('[App] Compute edges on first launch');
+    (async () => {
+      try {
+        const computedEdges = await computeEdges(
+          ywwidget.notebook.sessionContext.session?.kernel,
+          nodes
+        );
+        setEdges(
+          computedEdges.map(edge => ({
+            ...edge,
+            type: 'default',
+            markerEnd: MarkerType.ArrowClosed
+          }))
+        );
+        const obj = await getLayoutedElements(nodes, computedEdges);
+        setNodes(obj['nodes']);
+      } catch (err) {
+        console.error('[App] Failed to compute edges or layout', err);
+      }
+    })();
+  }, []);
+
+  // Layout (edge compute) selection change handler
+  const onLayoutSelectionChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    console.log('[ToolBar] Selected value: ', event.target.value);
+    {
+      (async () => {
+        try {
+          const computedEdges = await computeEdges(
+            ywwidget.notebook.sessionContext.session?.kernel,
+            nodes,
+            event.target.value
+          );
+          setEdges(
+            computedEdges.map(edge => ({
+              ...edge,
+              type: 'default',
+              markerEnd: MarkerType.ArrowClosed
+            }))
+          );
+          const obj = await getLayoutedElements(nodes, computedEdges);
+          setNodes(obj['nodes']);
+        } catch (err) {
+          console.error('[App] Failed to compute edges or layout', err);
+        }
+      })();
+    }
+  };
 
   // Layout button handler
   const onLayoutButton = useCallback(() => {
     getLayoutedElements(nodes, edges).then(obj => {
       setNodes(obj['nodes']);
-      setEdges(obj['edges']);
-      console.log(obj['nodes']);
-      console.log(obj['edges']);
+      console.log('[onLayoutButton] Nodes:', obj['nodes']);
+      console.log('[onLayoutButton] Edges:', edges);
     });
   }, [nodes, edges]);
 
@@ -137,8 +183,14 @@ function App({ ywwidget }: AppProps): JSX.Element {
       onNodesChange={onNodesChange}
       onNodeDoubleClick={onNodeDoubleClick}
     >
-      <Panel>
-        <ToolBar onClickLayout={onLayoutButton} onClickDebug={onDebugButton} />
+      <Panel position="top-left">
+        <ToolBar
+          onLayoutSelectionChange={onLayoutSelectionChange}
+          onClickLayout={onLayoutButton}
+        />
+      </Panel>
+      <Panel position="top-right">
+        <DebugToolBar onClickDebug={onDebugButton} />
       </Panel>
       <MiniMap pannable zoomable />
       <Controls />
@@ -147,7 +199,7 @@ function App({ ywwidget }: AppProps): JSX.Element {
   );
 }
 
-function AppWrapper({ ywwidget }: AppProps): JSX.Element {
+function AppWrapper({ ywwidget }: IAppProps): JSX.Element {
   return (
     <ReactFlowProvider>
       <App ywwidget={ywwidget} />
@@ -163,7 +215,6 @@ export class YWWidget extends ReactWidget {
   readonly notebookID: string;
   readonly notebook: NotebookPanel; // cannot be null
   Nodes: CellNode[] = [];
-  Edges: Edge[] = [];
 
   constructor(notebook: NotebookPanel) {
     super();
@@ -175,7 +226,6 @@ export class YWWidget extends ReactWidget {
 
     // initialize default nodes and prepare it to list for yw-core
     // and register to listen to code cell content changes
-    const ywCoreCodeCellList: string[] = [];
     let codeCellIndex = 0;
     this.notebook.content.widgets.forEach((cell, index) => {
       if (cell.model.type !== 'code') {
@@ -187,7 +237,7 @@ export class YWWidget extends ReactWidget {
         }, this);
 
         // prepare code cell for yw-core
-        let cellMeta = cell.model.toJSON();
+        const cellMeta = cell.model.toJSON();
         const nodeID = `${codeCellIndex}`;
         const onContentChange = (env: ChangeEvent<HTMLTextAreaElement>) => {
           this.onNodeContentChanged(nodeID, env.target.value);
@@ -206,31 +256,7 @@ export class YWWidget extends ReactWidget {
           }
         });
         codeCellIndex += 1;
-
-        // join string array to string and append it to list
-        if (typeof cellMeta.source === 'string') {
-          ywCoreCodeCellList.push(cellMeta.source);
-        } else {
-          ywCoreCodeCellList.push(cellMeta.source.join('\n'));
-        }
       }
-    });
-
-    // compute the edges using yw-core
-    computeEdges(
-      this.notebook.sessionContext.session?.kernel,
-      ywCoreCodeCellList
-    ).then(edges => {
-      console.log('[YWWidget] Computed edges: ', edges);
-      edges.forEach(edge => {
-        this.Edges.push({
-          id: edge.id,
-          source: edge.source,
-          target: edge.target,
-          type: 'bezier',
-          markerEnd: { type: MarkerType.ArrowClosed }
-        });
-      });
     });
     console.log('[YWWidget] end of constructor');
   }
@@ -239,7 +265,7 @@ export class YWWidget extends ReactWidget {
     const cells = this.notebook.content.widgets.filter(cell => {
       return cell.model.type === 'code';
     });
-    let source = cells[cellIndex].model.toJSON().source;
+    const source = cells[cellIndex].model.toJSON().source;
     reactflowController.updateCellNodeContent?.(`${cellIndex}`, source);
   }
 
