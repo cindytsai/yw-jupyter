@@ -3,10 +3,10 @@ requires = ["hatchling>=1.5.0", "jupyterlab>=4.0.0,<5", "hatch-nodejs-version>=0
 build-backend = "hatchling.build"
 
 [project]
-name = "jupyter_yesworkflow"
+name = "yw-jupyter"
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Framework :: Jupyter",
     "Framework :: Jupyter :: JupyterLab",
@@ -16,14 +16,13 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "jupyter_server>=2.4.0,<3",
     "yw-core>=0.1.0,<1"
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
@@ -35,25 +34,24 @@ source = "nodejs"
 fields = ["description", "authors", "urls", "keywords"]
 
 [tool.hatch.build.targets.sdist]
-artifacts = ["jupyter_yesworkflow/labextension"]
+artifacts = ["yw-jupyter/labextension"]
 exclude = [".github", "binder"]
 
 [tool.hatch.build.targets.wheel.shared-data]
-"jupyter_yesworkflow/labextension" = "share/jupyter/labextensions/jupyter-yesworkflow"
-"install.json" = "share/jupyter/labextensions/jupyter-yesworkflow/install.json"
-"jupyter-config/server-config" = "etc/jupyter/jupyter_server_config.d"
+"yw-jupyter/labextension" = "share/jupyter/labextensions/yw-jupyter"
+"install.json" = "share/jupyter/labextensions/yw-jupyter/install.json"
 
 [tool.hatch.build.hooks.version]
-path = "jupyter_yesworkflow/_version.py"
+path = "yw-jupyter/_version.py"
 
 [tool.hatch.build.hooks.jupyter-builder]
 dependencies = ["hatch-jupyter-builder>=0.5"]
 build-function = "hatch_jupyter_builder.npm_builder"
 ensured-targets = [
-    "jupyter_yesworkflow/labextension/static/style.js",
-    "jupyter_yesworkflow/labextension/package.json",
+    "yw-jupyter/labextension/static/style.js",
+    "yw-jupyter/labextension/package.json",
 ]
-skip-if-exists = ["jupyter_yesworkflow/labextension/static/style.js"]
+skip-if-exists = ["yw-jupyter/labextension/static/style.js"]
 
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
 build_cmd = "build:prod"
@@ -63,7 +61,7 @@ npm = ["jlpm"]
 build_cmd = "install:extension"
 npm = ["jlpm"]
 source_dir = "src"
-build_dir = "jupyter_yesworkflow/labextension"
+build_dir = "yw-jupyter/labextension"
 
 [tool.jupyter-releaser.options]
 version_cmd = "hatch version"

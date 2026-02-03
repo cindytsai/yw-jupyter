@@ -1,12 +1,10 @@
-# jupyter-yesworkflow
+# yw-jupyter
 
-A JupyterLab extension for visualizing YesWorkflow.
+[![Github Actions Status](https://github.com/CIRSS/yw-jupyter.git/workflows/Build/badge.svg)](https://github.com/CIRSS/yw-jupyter.git/actions/workflows/build.yml)
 
-This extension is composed of a Python package named `jupyter_yesworkflow`
-for the server extension and a NPM package named `jupyter-yesworkflow`
-for the frontend extension.
+A JupyterLab extension for visualizing notebook cells using YesWorkflow.
 
-## Install and Requirements
+## Requirements
 
 #### Requirements
 
@@ -18,30 +16,70 @@ for the frontend extension.
 Install from source code:
 
 ```bash
-git clone https://github.com/cindytsai/jupyter-yesworkflow.git
-cd jupyter-yesworkflow
-jlpm run build
-pip install .
+pip install yw-jupyter
 ```
 
 #### Uninstall
 
 ```bash
-pip uninstall jupyter-yesworkflow
+pip uninstall yw-jupyter
 ```
 
-## Troubleshoot
+## Contributing
 
-If you are seeing the frontend extension, but it is not working, check
-that the server extension is enabled:
+### Development install
+
+Note: You will need NodeJS to build the extension package.
+
+The `jlpm` command is JupyterLab's pinned version of
+[yarn](https://yarnpkg.com/) that is installed with JupyterLab. You may use
+`yarn` or `npm` in lieu of `jlpm` below.
 
 ```bash
-jupyter server extension list
+# Clone the repo to your local environment
+# Change directory to the yw-jupyter directory
+
+# Set up a virtual environment and install package in development mode
+python -m venv .venv
+source .venv/bin/activate
+pip install --editable "."
+
+# Link your development version of the extension with JupyterLab
+jupyter labextension develop . --overwrite
+
+# Rebuild extension Typescript source after making changes
+# IMPORTANT: Unlike the steps above which are performed only once, do this step
+# every time you make a change.
+jlpm build
 ```
 
-If the server extension is installed and enabled, but you are not seeing
-the frontend extension, check the frontend extension is installed:
+You can watch the source directory and run JupyterLab at the same time in different terminals to watch for changes in the extension's source and automatically rebuild the extension.
 
 ```bash
-jupyter labextension list
+# Watch the source directory in one terminal, automatically rebuilding when needed
+jlpm watch
+# Run JupyterLab in another terminal
+jupyter lab
 ```
+
+With the watch command running, every saved change will immediately be built locally and available in your running JupyterLab. Refresh JupyterLab to load the change in your browser (you may need to wait several seconds for the extension to be rebuilt).
+
+By default, the `jlpm build` command generates the source maps for this extension to make it easier to debug using the browser dev tools. To also generate source maps for the JupyterLab core extensions, you can run the following command:
+
+```bash
+jupyter lab build --minimize=False
+```
+
+### Development uninstall
+
+```bash
+pip uninstall yw-jupyter
+```
+
+In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
+command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
+folder is located. Then you can remove the symlink named `yw-jupyter` within that folder.
+
+### Packaging the extension
+
+See [RELEASE](RELEASE.md)

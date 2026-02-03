@@ -1,19 +1,16 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: v4.3.8
+_commit: v4.5.1
 _src_path: https://github.com/jupyterlab/extension-template
 author_email: turquoisea.tsai@gmail.com
-author_name: Shin-Rong Tsai
-data_format: string
-file_extension: ''
+author_name: Shin-Rong Tsai, Timothy McPhillips, Meng Li
+has_ai_rules: false
 has_binder: false
-has_settings: false
-kind: server
-labextension_name: jupyter-yesworkflow
-mimetype: ''
-mimetype_name: ''
-project_short_description: A JupyterLab extension for visualizing YesWorkflow.
-python_name: jupyter_yesworkflow
-repository: https://github.com/cindytsai/jupyter-yesworkflow.git
+has_settings: true
+kind: frontend
+labextension_name: yw-jupyter
+project_short_description: A JupyterLab extension for visualizing notebook cells using
+    YesWorkflow.
+python_name: yw-jupyter
+repository: https://github.com/CIRSS/yw-jupyter.git
 test: false
-viewer_name: ''
 

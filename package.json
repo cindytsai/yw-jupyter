@@ -1,32 +1,33 @@
 {
-    "name": "jupyter-yesworkflow",
+    "name": "yw-jupyter",
     "version": "0.1.0",
-    "description": "A JupyterLab extension for visualizing YesWorkflow.",
+    "description": "A JupyterLab extension for visualizing notebook cells using YesWorkflow.",
     "keywords": [
         "jupyter",
         "jupyterlab",
         "jupyterlab-extension"
     ],
-    "homepage": "https://github.com/cindytsai/jupyter-yesworkflow.git",
+    "homepage": "https://github.com/CIRSS/yw-jupyter.git",
     "bugs": {
-        "url": "https://github.com/cindytsai/jupyter-yesworkflow.git/issues"
+        "url": "https://github.com/CIRSS/yw-jupyter.git/issues"
     },
     "license": "BSD-3-Clause",
     "author": {
-        "name": "Shin-Rong Tsai",
+        "name": "Shin-Rong Tsai, Timothy McPhillips, Meng Li",
         "email": "turquoisea.tsai@gmail.com"
     },
     "files": [
         "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
         "style/**/*.{css,js,eot,gif,html,jpg,json,png,svg,woff2,ttf}",
-        "src/**/*.{ts,tsx}"
+        "src/**/*.{ts,tsx}",
+        "schema/*.json"
     ],
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "style": "style/index.css",
     "repository": {
         "type": "git",
-        "url": "https://github.com/cindytsai/jupyter-yesworkflow.git.git"
+        "url": "https://github.com/CIRSS/yw-jupyter.git.git"
     },
     "scripts": {
         "build": "jlpm build:lib && jlpm build:labextension:dev",
@@ -38,7 +39,7 @@
         "clean": "jlpm clean:lib",
         "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
         "clean:lintcache": "rimraf .eslintcache .stylelintcache",
-        "clean:labextension": "rimraf jupyter_yesworkflow/labextension jupyter_yesworkflow/_version.py",
+        "clean:labextension": "rimraf yw-jupyter/labextension yw-jupyter/_version.py",
         "clean:all": "jlpm clean:lib && jlpm clean:labextension && jlpm clean:lintcache",
         "eslint": "jlpm eslint:check --fix",
         "eslint:check": "eslint . --cache --ext .ts,.tsx",
@@ -84,7 +85,6 @@
         "eslint": "^8.36.0",
         "eslint-config-prettier": "^8.8.0",
         "eslint-plugin-prettier": "^5.0.0",
-        "mkdirp": "^1.0.3",
         "npm-run-all2": "^7.0.1",
         "prettier": "^3.0.0",
         "rimraf": "^5.0.1",
@@ -95,8 +95,11 @@
         "stylelint-config-standard": "^34.0.0",
         "stylelint-csstree-validator": "^3.0.0",
         "stylelint-prettier": "^4.0.0",
-        "typescript": "~5.0.2",
+        "typescript": "~5.5.4",
         "yjs": "^13.5.0"
+    },
+    "resolutions": {
+        "lib0": "0.2.111"
     },
     "sideEffects": [
         "style/*.css",
@@ -107,16 +110,6 @@
         "access": "public"
     },
     "jupyterlab": {
-        "discovery": {
-            "server": {
-                "managers": [
-                    "pip"
-                ],
-                "base": {
-                    "name": "jupyter_yesworkflow"
-                }
-            }
-        },
         "extension": true,
         "outputDir": "jupyter_yesworkflow/labextension",
         "schemaDir": "schema"

@@ -120,11 +120,11 @@ function activate(
 }
 
 /**
- * Initialization data for the jupyter-yesworkflow extension.
+ * Initialization data for the yw-jupyter extension.
  */
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'jupyter-yesworkflow:plugin',
-  description: 'A JupyterLab extension for visualizing YesWorkflow.',
+  id: 'yw-jupyter:plugin',
+  description: 'A JupyterLab extension for visualizing notebook cells using YesWorkflow.',
   autoStart: true,
   requires: [INotebookTracker],
   activate: activate

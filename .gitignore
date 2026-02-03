@@ -7,14 +7,17 @@ node_modules/
 *.egg-info/
 .ipynb_checkpoints
 *.tsbuildinfo
-jupyter_yesworkflow/labextension
+yw-jupyter/labextension
 # Version file is handled by hatchling
-jupyter_yesworkflow/_version.py
+yw-jupyter/_version.py
 
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python
 
 ### Python ###
+# Virtual environments
+.venv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
