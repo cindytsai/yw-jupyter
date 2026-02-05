@@ -12,16 +12,21 @@ A JupyterLab extension build upon ReactFlow for visualizing notebook cells using
 ![demo-v0.1](./doc/static/yw-jupyter-demo-v0.1.gif)
 
 
-
 ## Install
 
 ### PyPI
+
+> [!NOTE]
+> Recommended installation method.
 
 ```bash
 pip install yw-jupyter
 ```
 
 ### Install from source
+
+> [!WARNING]
+> Avoid installing from source unless you need the latest features or development mode.
 
 - Requirements:
   - `JupyterLab` >= 4.0.0
@@ -36,7 +41,8 @@ jlpm build:prod
 jupyter labextension develop . --overwrite 
 ```
 
-> [!WARNING]
-> Avoid installing from source unless you need the latest features or development mode.
-
 ## Known Issues and Future Work
+
+- Code block's cursor in graph node not matching the actual cursor position.
+- Currently, support only static analysis of notebook cells using [`yw-core`](https://github.com/CIRSS/yw-core). Supporting dynamic analysis via runtime provenance capture is planned for future releases.
+- Bugs when multiple notebooks and yw-jupyter extensions are open in JupyterLab simultaneously.
