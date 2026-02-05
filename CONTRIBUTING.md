@@ -10,13 +10,13 @@ The `jlpm` command is JupyterLab's pinned version of
 
 ```bash
 # Clone the repo to your local environment
-# Change directory to the jupyter_yesworkflow directory
+# Change directory to the yw-jupyter directory
 # Install package in development mode
 pip install -e "."
 # Link your development version of the extension with JupyterLab
 jupyter labextension develop . --overwrite
 # Server extension must be manually installed in develop mode
-jupyter server extension enable jupyter_yesworkflow
+jupyter server extension enable yw-jupyter
 # Rebuild extension Typescript source after making changes
 jlpm build
 ```
@@ -42,10 +42,10 @@ jupyter lab build --minimize=False
 
 ```bash
 # Server extension must be manually disabled in develop mode
-jupyter server extension disable jupyter_yesworkflow
-pip uninstall jupyter_yesworkflow
+jupyter server extension disable yw-jupyter
+pip uninstall yw-jupyter
 ```
 
 In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
 command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
-folder is located. Then you can remove the symlink named `jupyter-yesworkflow` within that folder.
+folder is located. Then you can remove the symlink named `yw-jupyter` within that folder.

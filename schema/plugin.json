@@ -8,13 +8,13 @@
     "Notebook": [
       {
         "name": "yesworkflow-toolbars-button",
-        "command": "jupyter-yesworkflow:open"
+        "command": "yw-jupyter:open"
       }
     ],
     "Cell": [
       {
         "name": "yesworkflow-toolbars-button",
-        "command": "jupyter-yesworkflow:go-to-node"
+        "command": "yw-jupyter:go-to-node"
       }
     ]
   }

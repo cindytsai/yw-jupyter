@@ -29,8 +29,8 @@ function activate(
   });
 
   // all yw command
-  const ywCommandOpen: string = 'jupyter-yesworkflow:open';
-  const ywCommandGoToNode: string = 'jupyter-yesworkflow:go-to-node';
+  const ywCommandOpen: string = 'yw-jupyter:open';
+  const ywCommandGoToNode: string = 'yw-jupyter:go-to-node';
 
   function createYWWidget(
     notebook: NotebookPanel,
