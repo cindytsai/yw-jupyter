@@ -41,6 +41,18 @@ jlpm build:prod
 jupyter labextension develop . --overwrite 
 ```
 
+## Troubleshooting
+
+Make sure we see `yw-jupyter` is enabled in JupyterLab extensions list:
+
+```bash
+>>> jupyter labextension list
+JupyterLab v4.5.3
+~/Documents/GitHub/yw-jupyter/.venv/share/jupyter/labextensions
+        jupyterlab_pygments v0.3.0 enabled OK (python, jupyterlab_pygments)
+        yw-jupyter v0.1.0 enabled OK
+```
+
 ## Known Issues and Future Work
 
 - Code block's cursor in graph node not matching the actual cursor position.
