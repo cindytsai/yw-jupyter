@@ -124,21 +124,12 @@ export async function computeEdges(
     };
 
     // clear the Python object (currently, python objects are hardcoded to cell_i and cell_list)
-    // TODO: can I make this prettier?
-    input_cells.forEach((cell, index) => {
-      kernel.requestExecute({
-        code: `del(cell_${index})`,
-        silent: false,
-        store_history: false
-      });
-    });
+    let clear_cmd = input_cells
+      .map((cell, index) => `del(cell_${index})`)
+      .join('; ');
+    clear_cmd += '; del(cell_list); del(extract_records); del(parse_yw_core)\n';
     kernel.requestExecute({
-      code: 'del(cell_list)\n',
-      silent: false,
-      store_history: false
-    });
-    kernel.requestExecute({
-      code: 'del(extract_records);del(parse_yw_core)\n',
+      code: clear_cmd,
       silent: false,
       store_history: false
     });
