@@ -170,8 +170,6 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     };
   }, []);
 
-  // TODO: Calculate the initial layout on mount.
-
   // defaultNodes only used for initial rendering
   return (
     <ReactFlow
