@@ -5,7 +5,14 @@ import React, {
   ReactNode
 } from 'react';
 import { useNodeId, useNodes, useReactFlow } from '@xyflow/react';
-import { EllipsisVertical, Play, SquareArrowDown, Trash } from 'lucide-react';
+import {
+  EllipsisVertical,
+  FastForward,
+  FileDown,
+  Play,
+  SquareArrowDown,
+  Trash
+} from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Slot } from '@radix-ui/react-slot';
 import { Button, ButtonProps } from './ui/button';
@@ -224,6 +231,41 @@ export const NodeHeaderRunAction = () => {
   return (
     <NodeHeaderAction onClick={handleClick} label="Dive in to node">
       <Play />
+    </NodeHeaderAction>
+  );
+};
+
+/* NODE HEADER RUN ALL ACTION -------------------------------------- */
+
+export const NodeHeaderRunAllDownstreamAction = () => {
+  const node = useNodes();
+
+  const handleClick = () => {
+    console.log('Run all downstream node', node);
+  };
+
+  return (
+    <NodeHeaderAction onClick={handleClick} label="Run all downstream action">
+      <FastForward />
+    </NodeHeaderAction>
+  );
+};
+
+/* NODE HEADER RUN ALL ACTION -------------------------------------- */
+
+export const NodeHeaderExportAction = () => {
+  const node = useNodes();
+
+  const handleClick = () => {
+    console.log('Run export', node);
+  };
+
+  return (
+    <NodeHeaderAction
+      onClick={handleClick}
+      label="Run export reproducible script action"
+    >
+      <FileDown />
     </NodeHeaderAction>
   );
 };

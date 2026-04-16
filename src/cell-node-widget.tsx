@@ -3,10 +3,12 @@ import React, { ChangeEvent, memo } from 'react';
 import { BaseNode } from './components/base-node';
 import {
   NodeHeader,
-  NodeHeaderTitle
-  // NodeHeaderActions,
+  NodeHeaderTitle,
+  NodeHeaderActions,
   // NodeHeaderDiveInAction,
-  // NodeHeaderRunAction,
+  NodeHeaderRunAction,
+  NodeHeaderRunAllDownstreamAction,
+  NodeHeaderExportAction
   // NodeHeaderDeleteAction
 } from './components/node-header';
 import CodeEditor from '@uiw/react-textarea-code-editor';
@@ -29,11 +31,13 @@ export const CellNodeWidget = memo(
       <BaseNode selected={selected} className="px-3 py-2">
         <NodeHeader className="-mx-3 -mt-2 border-b">
           <NodeHeaderTitle>{data.header}</NodeHeaderTitle>
-          {/*<NodeHeaderActions>*/}
-          {/*  <NodeHeaderDiveInAction />*/}
-          {/*  <NodeHeaderRunAction />*/}
-          {/*  <NodeHeaderDeleteAction />*/}
-          {/*</NodeHeaderActions>*/}
+          <NodeHeaderActions>
+            {/*<NodeHeaderDiveInAction />*/}
+            <NodeHeaderRunAction />
+            <NodeHeaderRunAllDownstreamAction />
+            <NodeHeaderExportAction />
+            {/*  <NodeHeaderDeleteAction />*/}
+          </NodeHeaderActions>
         </NodeHeader>
         <div className="mt-2">
           <CodeEditor
