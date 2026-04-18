@@ -49,7 +49,9 @@ function App({ ywwidget }: IAppProps): JSX.Element {
   // On node double click handler
   const onNodeDoubleClick = (event: React.MouseEvent, node: CellNode) => {
     console.log('[App] Node double-clicked: ', node);
-    ywwidget.focusCell(node.data.order_index);
+    if (typeof node.data.cell_id === 'string') {
+      ywwidget.focusCell(node.data.cell_id);
+    }
   };
 
   // Compute the edges on first launch
@@ -246,6 +248,7 @@ export class YWWidget extends ReactWidget {
           position: { x: 0, y: 0 },
           data: {
             order_index: index,
+            cell_id: cell.model.id,
             exec_count: 0,
             header: `Cell ${index + 1}`,
             code_block: cellMeta.source,
@@ -280,10 +283,16 @@ export class YWWidget extends ReactWidget {
     }
   }
 
-  focusCell(cellIndex: number) {
-    this.notebook.content.activeCellIndex = cellIndex;
+  focusCell(cellID: string) {
+    // Jupyter uses the _order_ of the cell index to focus on a cell in the notebook:
+    //   1. Find the cell ID
+    //   2. Use the ID to find the order of the cell
+    this.notebook.content.activeCellIndex =
+      this.notebook.content.widgets.findIndex(
+        cell_node => cell_node.model.id === cellID
+      );
     NotebookActions.focusActiveCell(this.notebook.content);
-    console.log('[YWWidget] focusCell: ', cellIndex);
+    console.log('[YWWidget] focusCellID: ', cellID);
   }
 
   focusYWNode(cellIndex: number | undefined) {

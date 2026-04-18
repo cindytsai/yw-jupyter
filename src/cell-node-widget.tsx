@@ -17,6 +17,7 @@ import { Handle, Node, NodeProps, Position } from '@xyflow/react';
 
 export interface ICellNodeData extends Record<string, unknown> {
   order_index: number;
+  cell_id: string | null;
   exec_count: number;
   header: string;
   code_block: string | string[];
