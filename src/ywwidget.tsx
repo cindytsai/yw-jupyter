@@ -295,10 +295,10 @@ export class YWWidget extends ReactWidget {
     console.log('[YWWidget] focusCellID: ', cellID);
   }
 
-  focusYWNode(cellIndex: number | undefined) {
-    console.log('[YWWidget] focusYWNode: ', cellIndex);
+  focusYWNode(cellID: string) {
+    console.log('[YWWidget] focusYWNode: ', cellID);
     // find the node with the given ID
-    const node = this.Nodes.find(n => n.data.order_index === cellIndex);
+    const node = this.Nodes.find(n => n.data.cell_id === cellID);
     if (node) {
       console.log('[YWWidget] Found node: ', node);
       reactflowController.focusAndSelectNode?.(node.id);

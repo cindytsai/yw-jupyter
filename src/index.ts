@@ -99,7 +99,11 @@ function activate(
         app.shell.add(ywWidget, 'main', { mode: 'split-right' });
       }
       const cellIndex = notebookTracker.currentWidget?.content.activeCellIndex;
-      ywWidget?.content.focusYWNode(cellIndex);
+      if (typeof cellIndex === 'number') {
+        ywWidget?.content.focusYWNode(
+          this.notebook.content.widgets.cells[cellIndex].id
+        );
+      }
     }
   });
 }
