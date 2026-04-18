@@ -21,13 +21,13 @@ export interface ICellNodeData extends Record<string, unknown> {
   header: string;
   code_block: string | string[];
   on_content_change?: (env: ChangeEvent<HTMLTextAreaElement>) => void;
-  status: 'not-execute' | 'executing' | 'executed';
+  status: 'not-execute' | 'executing' | 'executed' | 'editing';
 }
 
 const CELL_NODE_STATUS_COLOR: Record<string, string> = {
-  Executed: '#0052B0',
-  NotExecute: '#C2C2C2',
-  Editing: '#EC7500'
+  executed: '#0052B0',
+  'not-execute': '#C2C2C2',
+  editing: '#EC7500'
 };
 
 export type CellNode = Node<ICellNodeData>;
@@ -37,7 +37,7 @@ export const CellNodeWidget = memo(
     return (
       <>
         <BaseNode selected={selected} className="px-3 py-2">
-          <NodeSidePanel color={CELL_NODE_STATUS_COLOR['NotExecute']} />
+          <NodeSidePanel color={CELL_NODE_STATUS_COLOR[data.status]} />
           <NodeHeader className="-mx-3 -mt-2 border-b">
             <NodeHeaderTitle>{data.header}</NodeHeaderTitle>
             <NodeHeaderActions>
