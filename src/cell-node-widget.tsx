@@ -21,13 +21,14 @@ export interface ICellNodeData extends Record<string, unknown> {
   header: string;
   code_block: string | string[];
   on_content_change?: (env: ChangeEvent<HTMLTextAreaElement>) => void;
-  status: 'not-execute' | 'executing' | 'executed' | 'editing';
+  status: 'not-execute' | 'executing' | 'executed' | 'editing' | 'failed';
 }
 
 const CELL_NODE_STATUS_COLOR: Record<string, string> = {
   executed: '#0052B0',
   'not-execute': '#C2C2C2',
-  editing: '#EC7500'
+  editing: '#F6A82D',
+  failed: '#D43333'
 };
 
 export type CellNode = Node<ICellNodeData>;
