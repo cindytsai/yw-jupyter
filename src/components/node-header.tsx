@@ -1,8 +1,8 @@
 import React, {
   forwardRef,
-  useCallback,
   HTMLAttributes,
-  ReactNode
+  ReactNode,
+  useCallback
 } from 'react';
 import { useNodeId, useNodes, useReactFlow } from '@xyflow/react';
 import {
@@ -18,9 +18,11 @@ import { Slot } from '@radix-ui/react-slot';
 import { Button, ButtonProps } from './ui/button';
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent
+  DropdownMenuContent,
+  DropdownMenuTrigger
 } from './ui/dropdown-menu';
+import { NotebookActions } from '@jupyterlab/notebook';
+import { getNotebookAndCellById } from '../helper';
 
 /* NODE HEADER -------------------------------------------------------------- */
 
@@ -222,14 +224,29 @@ export const NodeHeaderDiveInAction = () => {
 /* NODE HEADER RUN ACTION -------------------------------------- */
 
 export const NodeHeaderRunAction = () => {
-  const node = useNodes();
+  // Get the node info
+  const nodeID = useNodeId();
+  const nodes = useNodes();
+  const currentNode = nodes.find(node => node.id === nodeID);
 
-  const handleClick = () => {
-    console.log('Run to node', node);
+  // Get the notebook and cell through notebook_id and cell_id
+  const { notebook, cell } = getNotebookAndCellById(
+    currentNode?.data.notebook_id as string,
+    currentNode?.data.cell_id as string
+  );
+
+  console.log('[Node Run] node', currentNode);
+  console.log('[Node Run] notebook', notebook);
+  console.log('[Node Run] cell', cell);
+
+  const handleClick = async () => {
+    if (currentNode && notebook && cell) {
+      await NotebookActions.runCells(notebook, [cell]);
+    }
   };
 
   return (
-    <NodeHeaderAction onClick={handleClick} label="Dive in to node">
+    <NodeHeaderAction onClick={handleClick} label="Run node">
       <Play />
     </NodeHeaderAction>
   );

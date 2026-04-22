@@ -21,7 +21,10 @@ import {
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
-import { NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
+import {
+  NotebookActions,
+  NotebookPanel
+} from '@jupyterlab/notebook';
 import { computeEdges } from './yw-core';
 
 const nodeTypes = {
@@ -248,6 +251,7 @@ export class YWWidget extends ReactWidget {
           position: { x: 0, y: 0 },
           data: {
             order_index: index,
+            notebook_id: notebook.id,
             cell_id: cell.model.id,
             exec_count: 0,
             header: `Cell ${index + 1}`,

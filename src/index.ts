@@ -12,6 +12,7 @@ import { LabIcon } from '@jupyterlab/ui-components';
 import { YWWidget } from './ywwidget';
 
 import yesworkflowSvgStr from '../style/icons/yesworkflow.svg';
+import { setNotebookTracker } from './helper';
 
 function activate(
   app: JupyterFrontEnd,
@@ -79,6 +80,9 @@ function activate(
       }
     }
   });
+
+  // register notebook tracker
+  setNotebookTracker(notebookTracker);
 
   // register yw go to node command
   app.commands.addCommand(ywCommandGoToNode, {
