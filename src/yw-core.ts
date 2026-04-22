@@ -115,6 +115,8 @@ export async function computeEdges(
 
     let output_raw: string | string[] | null | undefined = null;
     exec_result.onIOPub = (msg: KernelMessage.IIOPubMessage) => {
+      console.log('[yw-core] msg_type:', msg.header.msg_type);
+      console.log('[yw-core] msg_type:', msg.content);
       if (msg.header.msg_type === 'stream') {
         const content = msg.content as IStream;
         output_raw = content.text;
