@@ -15,11 +15,11 @@ export const getNotebookAndCellById = (notebookID: string, cellID: string) => {
       cell => cell.model.id === cellID
     );
     if (cell) {
-      return { notebook: notebookPanel.content, cell: cell };
+      return { notebookPanel: notebookPanel, cell: cell };
     } else {
-      return { notebook: notebookPanel.content, cell: undefined };
+      return { notebookPanel: notebookPanel, cell: undefined };
     }
   } else {
-    return { notebook: null, cell: undefined };
+    return { notebookPanel: null, cell: undefined };
   }
 };

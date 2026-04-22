@@ -230,18 +230,22 @@ export const NodeHeaderRunAction = () => {
   const currentNode = nodes.find(node => node.id === nodeID);
 
   // Get the notebook and cell through notebook_id and cell_id
-  const { notebook, cell } = getNotebookAndCellById(
+  const { notebookPanel, cell } = getNotebookAndCellById(
     currentNode?.data.notebook_id as string,
     currentNode?.data.cell_id as string
   );
 
   console.log('[Node Run] node', currentNode);
-  console.log('[Node Run] notebook', notebook);
+  console.log('[Node Run] notebookPanel', notebookPanel);
   console.log('[Node Run] cell', cell);
 
   const handleClick = async () => {
-    if (currentNode && notebook && cell) {
-      await NotebookActions.runCells(notebook, [cell]);
+    if (currentNode && notebookPanel && cell) {
+      await NotebookActions.runCells(
+        notebookPanel.content,
+        [cell],
+        notebookPanel.sessionContext
+      );
     }
   };
 
