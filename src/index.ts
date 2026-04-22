@@ -100,9 +100,11 @@ function activate(
       }
       const cellIndex = notebookTracker.currentWidget?.content.activeCellIndex;
       if (typeof cellIndex === 'number') {
-        ywWidget?.content.focusYWNode(
-          this.notebook.content.widgets.cells[cellIndex].id
-        );
+        const cellID =
+          notebookTracker.currentWidget?.content.widgets[cellIndex].model.id;
+        if (typeof cellID === 'string') {
+          ywWidget?.content.focusYWNode(cellID);
+        }
       }
     }
   });
