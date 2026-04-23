@@ -234,7 +234,7 @@ export class YWWidget extends ReactWidget {
         // register content changed listener (TODO: need disconnection to avoid memory leakage)
         cell.model.contentChanged.connect(model => {
           console.log('[Code Cell Content Change] CellID', model.id);
-          this.onCodeCellContentChanged(model.id); // TODO: fix this (Start here)
+          this.onCodeCellContentChanged(model.id);
         }, this);
 
         // register execute status change listener (TODO: need disconnection to avoid memory leakage)
@@ -272,6 +272,20 @@ export class YWWidget extends ReactWidget {
         codeCellIndex += 1;
       }
     });
+
+    // Jupyter creates a new cell when reordering the cell,
+    // thus we need to bind the signals again
+    this.notebook.content.model?.cells.changed.connect((_, change) => {
+      console.log('[CellChange] change type:', change.type);
+      console.log('[CellChange] newIndex', change.newIndex);
+      if (change.type === 'add') {
+        const cell = this.notebook.content.widgets[change.newIndex];
+        cell.model.contentChanged.connect(model => {
+          console.log('[Code Cell Content Change] CellID', model.id);
+          this.onCodeCellContentChanged(model.id);
+        });
+      }
+    });
     console.log('[YWWidget] end of constructor');
   }
 
@@ -279,6 +293,7 @@ export class YWWidget extends ReactWidget {
     const cell = this.notebook.content.widgets.find(cell => {
       return cell.model.id === cellID;
     });
+    console.log('[onCodeCellContentChanged]', cell);
     if (cell) {
       const source = cell.model.toJSON().source;
       reactflowController.updateCellNodeContent?.(cellID, source);
