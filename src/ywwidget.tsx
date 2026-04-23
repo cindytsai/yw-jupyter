@@ -35,6 +35,10 @@ interface IAppProps {
 type ReactFlowControllerType = {
   focusAndSelectNode?: (nodeID: string) => void;
   updateCellNodeContent?: (cellID: string, content: string | string[]) => void;
+  updateStatus?: (
+    cellID: string,
+    status: 'executed' | 'running' | 'idle' | 'editing' | 'failed'
+  ) => void;
 };
 
 const reactflowController: ReactFlowControllerType = {};
@@ -172,6 +176,29 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     };
   }, []);
 
+  // On Node status change
+  const updateStatus = useCallback(
+    (
+      cellID: string,
+      status: 'executed' | 'running' | 'idle' | 'editing' | 'failed'
+    ) => {
+      setNodes(nds =>
+        nds.map(node =>
+          node.data.cell_id === cellID
+            ? { ...node, data: { ...node.data, status: status } }
+            : node
+        )
+      );
+    },
+    [setNodes]
+  );
+  useEffect(() => {
+    reactflowController.updateStatus = updateStatus;
+    return () => {
+      delete reactflowController.updateStatus;
+    };
+  }, []);
+
   // defaultNodes only used for initial rendering
   return (
     <ReactFlow
@@ -242,7 +269,20 @@ export class YWWidget extends ReactWidget {
           console.log('[Code Cell State Changed]', { model, value });
           // Update the execution state and count
           if (value.name === 'executionState') {
-            /* empty */
+            if (
+              reactflowController?.updateStatus &&
+              typeof value.oldValue === 'string' &&
+              typeof value.newValue === 'string'
+            ) {
+              if (value.oldValue === 'running' && value.newValue === 'idle') {
+                reactflowController.updateStatus(model.id, 'executed');
+              } else if (
+                value.oldValue === 'idle' &&
+                value.newValue === 'running'
+              ) {
+                reactflowController.updateStatus(model.id, 'running');
+              }
+            }
           } else if (value.name === 'executionCount') {
             /* empty */
           }
