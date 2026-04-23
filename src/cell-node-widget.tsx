@@ -23,13 +23,14 @@ export interface ICellNodeData extends Record<string, unknown> {
   header: string;
   code_block: string | string[];
   on_content_change?: (env: ChangeEvent<HTMLTextAreaElement>) => void;
-  status: 'not-execute' | 'executing' | 'executed' | 'editing' | 'failed';
+  status: 'executed' | 'running' | 'idle' | 'editing' | 'failed';
 }
 
 // TODO: executed status https://jupyterlab.readthedocs.io/en/latest/api/classes/notebook.NotebookActions-1.html
 const CELL_NODE_STATUS_COLOR: Record<string, string> = {
   executed: '#0052B0',
-  'not-execute': '#C2C2C2',
+  running: '#00D4FF',
+  idle: '#C2C2C2',
   editing: '#F6A82D',
   failed: '#D43333'
 };

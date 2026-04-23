@@ -21,10 +21,7 @@ import {
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
-import {
-  NotebookActions,
-  NotebookPanel
-} from '@jupyterlab/notebook';
+import { NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
 import { computeEdges } from './yw-core';
 
 const nodeTypes = {
@@ -37,7 +34,7 @@ interface IAppProps {
 
 type ReactFlowControllerType = {
   focusAndSelectNode?: (nodeID: string) => void;
-  updateCellNodeContent?: (nodeID: string, content: string | string[]) => void;
+  updateCellNodeContent?: (cellID: string, content: string | string[]) => void;
 };
 
 const reactflowController: ReactFlowControllerType = {};
@@ -150,10 +147,10 @@ function App({ ywwidget }: IAppProps): JSX.Element {
 
   // On Node content change
   const updateCellNodeContent = useCallback(
-    (nodeID: string, content: string | string[]) => {
+    (cellID: string, content: string | string[]) => {
       setNodes(nds =>
         nds.map(node => {
-          if (node.id === nodeID) {
+          if (node.data.cell_id === cellID) {
             return {
               ...node,
               data: {
@@ -234,10 +231,22 @@ export class YWWidget extends ReactWidget {
       if (cell.model.type !== 'code') {
         return;
       } else {
-        // register content changed listener
-        cell.model.contentChanged.connect(() => {
-          this.onCodeCellContentChanged(index);
+        // register content changed listener (TODO: need disconnection to avoid memory leakage)
+        cell.model.contentChanged.connect(model => {
+          console.log('[Code Cell Content Change] CellID', model.id);
+          this.onCodeCellContentChanged(model.id); // TODO: fix this (Start here)
         }, this);
+
+        // register execute status change listener (TODO: need disconnection to avoid memory leakage)
+        cell.model.stateChanged.connect((model, value) => {
+          console.log('[Code Cell State Changed]', { model, value });
+          // Update the execution state and count
+          if (value.name === 'executionState') {
+            /* empty */
+          } else if (value.name === 'executionCount') {
+            /* empty */
+          }
+        });
 
         // prepare code cell for yw-core
         const cellMeta = cell.model.toJSON();
@@ -257,7 +266,7 @@ export class YWWidget extends ReactWidget {
             header: `Cell ${index + 1}`,
             code_block: cellMeta.source,
             on_content_change: onContentChange,
-            status: 'not-execute'
+            status: 'idle'
           }
         });
         codeCellIndex += 1;
@@ -266,23 +275,32 @@ export class YWWidget extends ReactWidget {
     console.log('[YWWidget] end of constructor');
   }
 
-  onCodeCellContentChanged(cellIndex: number) {
-    const cells = this.notebook.content.widgets.filter(cell => {
-      return cell.model.type === 'code';
+  onCodeCellContentChanged(cellID: string) {
+    const cell = this.notebook.content.widgets.find(cell => {
+      return cell.model.id === cellID;
     });
-    const source = cells[cellIndex].model.toJSON().source;
-    reactflowController.updateCellNodeContent?.(`${cellIndex}`, source);
+    if (cell) {
+      const source = cell.model.toJSON().source;
+      reactflowController.updateCellNodeContent?.(cellID, source);
+    }
   }
 
   onNodeContentChanged(nodeID: string, new_code_block: string | string[]) {
     const node = this.Nodes.find(n => n.id === nodeID);
     if (node) {
       node.data.code_block = new_code_block;
-      const cellModel = this.notebook.model?.cells.get(node.data.order_index);
+      const cell = this.notebook.content.widgets.find(cell => {
+        return cell.model.id === node.data.cell_id;
+      });
+      if (!cell) {
+        return;
+      }
+      console.log('[onNodeContent Changed]', cell);
+      const codeCell = cell.model.sharedModel;
       if (typeof node.data.code_block === 'string') {
-        cellModel?.sharedModel.setSource(node.data.code_block);
+        codeCell?.setSource(node.data.code_block);
       } else {
-        cellModel?.sharedModel.setSource(node.data.code_block.join('\n'));
+        codeCell?.setSource(node.data.code_block.join('\n'));
       }
     }
   }

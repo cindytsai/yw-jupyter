@@ -235,10 +235,6 @@ export const NodeHeaderRunAction = () => {
     currentNode?.data.cell_id as string
   );
 
-  console.log('[Node Run] node', currentNode);
-  console.log('[Node Run] notebookPanel', notebookPanel);
-  console.log('[Node Run] cell', cell);
-
   const handleClick = async () => {
     if (currentNode && notebookPanel && cell) {
       await NotebookActions.runCells(
