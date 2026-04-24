@@ -283,10 +283,10 @@ export class YWWidget extends ReactWidget {
           }
         });
 
-        // register to notebook actions to get the execution status when run in notebook
+        // Register to notebook actions to get the execution status when run the cell
         NotebookActions.executed.connect((_, args) => {
           const { cell, success } = args;
-          if (reactflowController.updateStatus){
+          if (reactflowController.updateStatus) {
             reactflowController.updateStatus(
               cell.model.id,
               success ? 'executed' : 'failed'
