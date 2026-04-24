@@ -240,7 +240,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
       {/*<Panel position="top-right">*/}
       {/*  <DebugToolBar onClickDebug={onDebugButton} />*/}
       {/*</Panel>*/}
-      <MiniMap pannable zoomable />
+      <MiniMap pannable zoomable position="top-right" />
       <Controls />
       <Background />
     </ReactFlow>
