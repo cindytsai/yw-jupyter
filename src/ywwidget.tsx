@@ -274,17 +274,23 @@ export class YWWidget extends ReactWidget {
               typeof value.oldValue === 'string' &&
               typeof value.newValue === 'string'
             ) {
-              if (value.oldValue === 'running' && value.newValue === 'idle') {
-                reactflowController.updateStatus(model.id, 'executed');
-              } else if (
-                value.oldValue === 'idle' &&
-                value.newValue === 'running'
-              ) {
+              if (value.oldValue === 'idle' && value.newValue === 'running') {
                 reactflowController.updateStatus(model.id, 'running');
               }
             }
           } else if (value.name === 'executionCount') {
             /* empty */
+          }
+        });
+
+        // register to notebook actions to get the execution status when run in notebook
+        NotebookActions.executed.connect((_, args) => {
+          const { cell, success } = args;
+          if (reactflowController.updateStatus){
+            reactflowController.updateStatus(
+              cell.model.id,
+              success ? 'executed' : 'failed'
+            );
           }
         });
 
