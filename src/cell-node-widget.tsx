@@ -14,6 +14,7 @@ import {
 } from './components/node-header';
 import CodeEditor from '@uiw/react-textarea-code-editor';
 import { Handle, Node, NodeProps, Position } from '@xyflow/react';
+import { CELL_NODE_STATUS_COLOR } from './node-edge-status-style';
 
 export interface ICellNodeData extends Record<string, unknown> {
   order_index: number;
@@ -25,15 +26,6 @@ export interface ICellNodeData extends Record<string, unknown> {
   on_content_change?: (env: ChangeEvent<HTMLTextAreaElement>) => void;
   status: 'executed' | 'running' | 'idle' | 'editing' | 'failed';
 }
-
-// TODO: executed status https://jupyterlab.readthedocs.io/en/latest/api/classes/notebook.NotebookActions-1.html
-const CELL_NODE_STATUS_COLOR: Record<string, string> = {
-  executed: '#0052B0',
-  running: '#00D4FF',
-  idle: '#C2C2C2',
-  editing: '#F6A82D',
-  failed: '#D43333'
-};
 
 export type CellNode = Node<ICellNodeData>;
 
