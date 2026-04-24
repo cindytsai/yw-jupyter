@@ -4,7 +4,7 @@ import React, {
   ReactNode,
   useCallback
 } from 'react';
-import { useNodeId, useNodes, useReactFlow } from '@xyflow/react';
+import { useEdges, useNodeId, useNodes, useReactFlow } from '@xyflow/react';
 import {
   EllipsisVertical,
   FastForward,
@@ -276,8 +276,15 @@ export const NodeHeaderExportAction = () => {
   const nodes = useNodes();
   const currentNode = nodes.find(node => node.id === nodeID);
 
+  // Get edge info
+  const edges = useEdges();
+  const connectedEdges = edges.filter(
+    edge => edge.source === nodeID || edge.target === nodeID
+  );
+
   const handleClick = () => {
-    console.log('Run export', currentNode);
+    console.log('[Run export]', currentNode);
+    console.log('[Run export]', connectedEdges);
   };
 
   return (
