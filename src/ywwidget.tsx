@@ -10,7 +10,6 @@ import {
   Background,
   Controls,
   Edge,
-  MarkerType,
   MiniMap,
   Panel,
   ReactFlow,
@@ -23,6 +22,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
 import { computeEdges } from './yw-core';
+import { EDGE_STYLE } from './node-edge-status-style';
 
 const nodeTypes = {
   cell: CellNodeWidget
@@ -72,18 +72,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
           computedEdges.map(edge => ({
             ...edge,
             type: 'default',
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              width: 20,
-              height: 20,
-              color: '#C2C2C2'
-            },
-            style: {
-              stroke: '#C2C2C2',
-              strokeWidth: 2,
-              opacity: 0.8,
-              strokeDasharray: '5 5'
-            }
+            ...EDGE_STYLE['guess_dep']
           }))
         );
         const obj = await getLayoutedElements(nodes, computedEdges);
@@ -354,6 +343,7 @@ export class YWWidget extends ReactWidget {
 
     // Jupyter creates a new cell when reordering the cell,
     // thus we need to bind the signals again
+    // TODO: the node should follow this logic, otherwise we cannot tell what is added and what is reordered
     this.notebook.content.model?.cells.changed.connect((_, change) => {
       console.log('[CellChange] change type:', change.type);
       console.log('[CellChange] newIndex', change.newIndex);
