@@ -39,6 +39,7 @@ export type ReactFlowControllerType = {
     cellID: string,
     status: 'executed' | 'running' | 'idle' | 'editing' | 'failed'
   ) => void;
+  updateExecutionCount?: (cellID: string, execCount: number) => void;
 };
 
 export const reactflowController: ReactFlowControllerType = {};
@@ -199,6 +200,26 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     };
   }, []);
 
+  // On Node execution count change
+  const updateExecutionCount = useCallback(
+    (cellID: string, execCount: number) => {
+      setNodes(nds =>
+        nds.map(node =>
+          node.data.cell_id === cellID
+            ? { ...node, data: { ...node.data, exec_count: execCount } }
+            : node
+        )
+      );
+    },
+    [setNodes]
+  );
+  useEffect(() => {
+    reactflowController.updateExecutionCount = updateExecutionCount;
+    return () => {
+      delete reactflowController.updateExecutionCount;
+    };
+  }, []);
+
   // defaultNodes only used for initial rendering
   return (
     <ReactFlow
@@ -279,7 +300,15 @@ export class YWWidget extends ReactWidget {
               }
             }
           } else if (value.name === 'executionCount') {
-            /* empty */
+            if (
+              reactflowController?.updateExecutionCount &&
+              typeof value.newValue === 'number'
+            ) {
+              reactflowController.updateExecutionCount(
+                model.id,
+                value.newValue
+              );
+            }
           }
         });
 

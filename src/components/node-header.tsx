@@ -271,10 +271,13 @@ export const NodeHeaderRunAllDownstreamAction = () => {
 /* NODE HEADER RUN ALL ACTION -------------------------------------- */
 
 export const NodeHeaderExportAction = () => {
-  const node = useNodes();
+  // Get the node info
+  const nodeID = useNodeId();
+  const nodes = useNodes();
+  const currentNode = nodes.find(node => node.id === nodeID);
 
   const handleClick = () => {
-    console.log('Run export', node);
+    console.log('Run export', currentNode);
   };
 
   return (
