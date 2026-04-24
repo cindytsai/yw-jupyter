@@ -35,8 +35,8 @@ export const EDGE_STYLE: Record<string, EdgeStyle> = {
     },
     style: {
       stroke: '#C2C2C2',
-      strokeWidth: 1.5,
-      opacity: 0.8,
+      strokeWidth: 1,
+      opacity: 1,
       strokeDasharray: '5 5'
     }
   },
@@ -50,9 +50,37 @@ export const EDGE_STYLE: Record<string, EdgeStyle> = {
     },
     style: {
       stroke: '#C2C2C2',
-      strokeWidth: 1.5,
+      strokeWidth: 1,
       opacity: 0.8,
       strokeDasharray: '5 5'
+    }
+  },
+  dep: {
+    animated: false,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      width: 10,
+      height: 10,
+      color: '#000000'
+    },
+    style: {
+      stroke: '#000000',
+      strokeWidth: 1,
+      opacity: 0.8
+    }
+  },
+  selected_dep: {
+    animated: false,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      width: 10,
+      height: 10,
+      color: '#0052B0'
+    },
+    style: {
+      stroke: '#0052B0',
+      strokeWidth: 2,
+      opacity: 1.0
     }
   }
 };
