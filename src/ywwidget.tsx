@@ -72,7 +72,18 @@ function App({ ywwidget }: IAppProps): JSX.Element {
           computedEdges.map(edge => ({
             ...edge,
             type: 'default',
-            markerEnd: MarkerType.ArrowClosed
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              width: 20,
+              height: 20,
+              color: '#C2C2C2'
+            },
+            style: {
+              stroke: '#C2C2C2',
+              strokeWidth: 2,
+              opacity: 0.8,
+              strokeDasharray: '5 5'
+            }
           }))
         );
         const obj = await getLayoutedElements(nodes, computedEdges);
@@ -93,13 +104,6 @@ function App({ ywwidget }: IAppProps): JSX.Element {
             ywwidget.notebook.sessionContext.session?.kernel,
             nodes,
             event.target.value
-          );
-          setEdges(
-            computedEdges.map(edge => ({
-              ...edge,
-              type: 'default',
-              markerEnd: MarkerType.ArrowClosed
-            }))
           );
           const obj = await getLayoutedElements(nodes, computedEdges);
           setNodes(obj['nodes']);
