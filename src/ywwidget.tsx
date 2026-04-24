@@ -32,7 +32,7 @@ interface IAppProps {
   ywwidget: YWWidget;
 }
 
-type ReactFlowControllerType = {
+export type ReactFlowControllerType = {
   focusAndSelectNode?: (nodeID: string) => void;
   updateCellNodeContent?: (cellID: string, content: string | string[]) => void;
   updateStatus?: (
@@ -41,7 +41,7 @@ type ReactFlowControllerType = {
   ) => void;
 };
 
-const reactflowController: ReactFlowControllerType = {};
+export const reactflowController: ReactFlowControllerType = {};
 
 function App({ ywwidget }: IAppProps): JSX.Element {
   // ywwidget.Nodes are only for initialization

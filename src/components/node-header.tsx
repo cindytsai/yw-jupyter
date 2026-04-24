@@ -23,6 +23,7 @@ import {
 } from './ui/dropdown-menu';
 import { NotebookActions } from '@jupyterlab/notebook';
 import { getNotebookAndCellById } from '../helper';
+import { reactflowController } from '../ywwidget';
 
 /* NODE HEADER -------------------------------------------------------------- */
 
@@ -237,11 +238,19 @@ export const NodeHeaderRunAction = () => {
 
   const handleClick = async () => {
     if (currentNode && notebookPanel && cell) {
-      await NotebookActions.runCells(
+      const success = await NotebookActions.runCells(
         notebookPanel.content,
         [cell],
         notebookPanel.sessionContext
       );
+
+      console.log('[RunCell] handleClick', success);
+      if (reactflowController.updateStatus) {
+        reactflowController.updateStatus(
+          cell.model.id,
+          success ? 'executed' : 'failed'
+        );
+      }
     }
   };
 
