@@ -21,8 +21,10 @@ import {
 
 import '@xyflow/react/dist/style.css';
 import { NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
+import { ICodeCellModel } from '@jupyterlab/cells';
 import { computeEdges } from './yw-core';
 import { EDGE_STYLE } from './node-edge-status-style';
+import { computeDeps } from './dependency-catcher';
 
 const nodeTypes = {
   cell: CellNodeWidget
@@ -40,6 +42,7 @@ export type ReactFlowControllerType = {
     status: 'executed' | 'running' | 'idle' | 'editing' | 'failed'
   ) => void;
   updateExecutionCount?: (cellID: string, execCount: number) => void;
+  updateEdges?: (cellID: string, execute_count: number) => void;
 };
 
 export const reactflowController: ReactFlowControllerType = {};
@@ -193,6 +196,26 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     };
   }, []);
 
+  // Update edges based on dependency from ipyflow
+  const updateEdges = useCallback(
+    (cellID: string, execute_count: number) => {
+      console.log('[updateEdges] ', { cellID, execute_count });
+      computeDeps(
+        ywwidget.notebook.sessionContext.session?.kernel,
+        execute_count as number
+      ).then(obj => {
+        console.log('[updateEdges] ', obj);
+      });
+    },
+    [nodes, edges]
+  );
+  useEffect(() => {
+    reactflowController.updateEdges = updateEdges;
+    return () => {
+      delete reactflowController.updateEdges;
+    };
+  }, []);
+
   // On Node execution count change
   const updateExecutionCount = useCallback(
     (cellID: string, execCount: number) => {
@@ -313,6 +336,18 @@ export class YWWidget extends ReactWidget {
               cell.model.id,
               success ? 'executed' : 'failed'
             );
+          }
+
+          const exec_count = (cell.model as ICodeCellModel).executionCount;
+          console.log(
+            '[NotebookActions.executed] cellID:',
+            cell.model.id,
+            'exec_count:',
+            exec_count
+          );
+
+          if (reactflowController.updateEdges && exec_count) {
+            reactflowController.updateEdges(cell.model.id, exec_count);
           }
         });
 
