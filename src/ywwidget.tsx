@@ -3,7 +3,7 @@ import { ReactWidget } from '@jupyterlab/ui-components';
 import { CellNode, CellNodeWidget } from './cell-node-widget';
 
 import React, { ChangeEvent, useCallback, useEffect, useRef } from 'react';
-import { ToolBar } from './tool-bar';
+import { DebugToolBar, ToolBar } from './tool-bar';
 import { getLayoutedElements } from './layout';
 
 import {
@@ -211,16 +211,20 @@ function App({ ywwidget }: IAppProps): JSX.Element {
         nodesRef.current
       ).then(obj => {
         console.log('[computeDeps] ', obj);
-        setEdges(
-          obj.map(edge => ({
+        setEdges(prevEdges => {
+          const newEdges = obj.map(edge => ({
             ...edge,
+            id: edge.id,
             source: edge.source,
             target: edge.target,
-            id: edge.id,
             type: 'default',
             ...EDGE_STYLE['dep']
-          }))
-        );
+          }));
+
+          const existingIds = new Set(newEdges.map(e => e.id));
+          const preserved = prevEdges.filter(e => !existingIds.has(e.id));
+          return [...preserved, ...newEdges];
+        });
       });
     },
     [nodes, edges]
@@ -252,6 +256,12 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     };
   }, []);
 
+  // onDebugbutton
+  const onDebugButton = () => {
+    console.log('[Debug] Nodes: ', nodes);
+    console.log('[Debug] Edges: ', edges);
+  };
+
   // defaultNodes only used for initial rendering
   return (
     <ReactFlow
@@ -268,10 +278,8 @@ function App({ ywwidget }: IAppProps): JSX.Element {
           onLayoutSelectionChange={onLayoutSelectionChange}
           onClickLayout={onLayoutButton}
         />
+        <DebugToolBar onClickDebug={onDebugButton} />
       </Panel>
-      {/*<Panel position="top-right">*/}
-      {/*  <DebugToolBar onClickDebug={onDebugButton} />*/}
-      {/*</Panel>*/}
       <MiniMap pannable zoomable position="top-right" />
       <Controls />
       <Background />
