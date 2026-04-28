@@ -2,7 +2,7 @@ import { ReactWidget } from '@jupyterlab/ui-components';
 
 import { CellNode, CellNodeWidget } from './cell-node-widget';
 
-import React, { ChangeEvent, useCallback, useEffect } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useRef } from 'react';
 import { ToolBar } from './tool-bar';
 import { getLayoutedElements } from './layout';
 
@@ -53,6 +53,11 @@ function App({ ywwidget }: IAppProps): JSX.Element {
   const [nodes, setNodes, onNodesChange] = useNodesState(ywwidget.Nodes);
   const [edges, setEdges] = useEdgesState<Edge>([]);
   const { getNode, setCenter } = useReactFlow();
+  const nodesRef = useRef(nodes);
+
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
 
   // On node double click handler
   const onNodeDoubleClick = (event: React.MouseEvent, node: CellNode) => {
@@ -202,9 +207,20 @@ function App({ ywwidget }: IAppProps): JSX.Element {
       console.log('[updateEdges] ', { cellID, execute_count });
       computeDeps(
         ywwidget.notebook.sessionContext.session?.kernel,
-        execute_count as number
+        execute_count as number,
+        nodesRef.current
       ).then(obj => {
-        console.log('[updateEdges] ', obj);
+        console.log('[computeDeps] ', obj);
+        setEdges(
+          obj.map(edge => ({
+            ...edge,
+            source: edge.source,
+            target: edge.target,
+            id: edge.id,
+            type: 'default',
+            ...EDGE_STYLE['dep']
+          }))
+        );
       });
     },
     [nodes, edges]
