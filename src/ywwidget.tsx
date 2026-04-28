@@ -204,13 +204,12 @@ function App({ ywwidget }: IAppProps): JSX.Element {
   // Update edges based on dependency from ipyflow
   const updateEdges = useCallback(
     (cellID: string, execute_count: number) => {
-      console.log('[updateEdges] ', { cellID, execute_count });
       computeDeps(
         ywwidget.notebook.sessionContext.session?.kernel,
+        cellID,
         execute_count as number,
         nodesRef.current
       ).then(obj => {
-        console.log('[computeDeps] ', obj);
         setEdges(prevEdges => {
           const newEdges = obj.map(edge => ({
             ...edge,
@@ -220,14 +219,13 @@ function App({ ywwidget }: IAppProps): JSX.Element {
             type: 'default',
             ...EDGE_STYLE['dep']
           }));
-
           const existingIds = new Set(newEdges.map(e => e.id));
           const preserved = prevEdges.filter(e => !existingIds.has(e.id));
           return [...preserved, ...newEdges];
         });
       });
     },
-    [nodes, edges]
+    [setEdges]
   );
   useEffect(() => {
     reactflowController.updateEdges = updateEdges;

@@ -65,7 +65,7 @@ export const EDGE_STYLE: Record<string, EdgeStyle> = {
     },
     style: {
       stroke: '#000000',
-      strokeWidth: 1,
+      strokeWidth: 2,
       opacity: 0.8
     }
   },

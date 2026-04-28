@@ -10,6 +10,7 @@ import { CellNode } from './cell-node-widget';
  */
 export async function computeDeps(
   kernel: Kernel.IKernelConnection | undefined | null,
+  cellID: string,
   exec_count: number,
   nodes: CellNode[]
 ): Promise<IYWEdge[]> {
@@ -30,12 +31,10 @@ print(list(cells(${exec_count}).slice().raw_slice))
 
     let output_raw: string | string[] | null | undefined = null;
     dep_result.onIOPub = (msg: KernelMessage.IIOPubMessage) => {
-      console.log('[ipyflow] msg:', msg);
       if (msg.header.msg_type === 'stream') {
         const content = msg.content as IStream;
         output_raw = content.text;
-        console.log('[ipyflow] output: ', output_raw);
-        resolve(parseIPyFlowOutput(output_raw, exec_count, nodes));
+        resolve(parseIPyFlowOutput(output_raw, cellID, exec_count, nodes));
       }
     };
   });
@@ -43,10 +42,10 @@ print(list(cells(${exec_count}).slice().raw_slice))
 
 function parseIPyFlowOutput(
   output_raw: string | string[] | null | undefined,
+  cellID: string,
   my_exe_count: number,
   nodes: CellNode[]
 ): IYWEdge[] {
-  console.log('[parseIPyFlowOutput] nodes', nodes);
   if (output_raw) {
     let output: string;
     if (Array.isArray(output_raw)) {
@@ -60,17 +59,18 @@ function parseIPyFlowOutput(
       const source = nodes.find(
         node => node.data.exec_count === dep_arr[i]
       )?.id;
-      const target = nodes.find(
-        node => node.data.exec_count === dep_arr[i + 1]
-      )?.id; // target is undefine, start here TODO
 
+      // the last target (which is always the cell itself) execute count
+      // may not always be up to date, so we read from my_exe_count
+      const target =
+        nodes.find(n => n.data.exec_count === dep_arr[i + 1])?.id ??
+        nodes.find(n => n.data.cell_id === cellID)?.id;
       edges.push({
         id: `e${source}-${target}`,
         source: `${source}`,
         target: `${target}`
       });
     }
-    console.log('[parseIPyFlowOutput] ', edges);
     return edges;
   } else {
     return [];
