@@ -43,6 +43,8 @@ export type ReactFlowControllerType = {
   ) => void;
   updateExecutionCount?: (cellID: string, execCount: number) => void;
   updateEdges?: (cellID: string, execute_count: number) => void;
+  addNode?(cellID: string, index: number, codeBlock: string | string[]): void;
+  getNodes?(): CellNode[];
 };
 
 export const reactflowController: ReactFlowControllerType = {};
@@ -209,6 +211,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
         execute_count as number,
         nodesRef.current
       ).then(obj => {
+        console.log('[updateEdges]', obj); // TODO: %flow mode normal should be code block to work.
         setEdges(prevEdges => {
           const newEdges = obj.map(edge => ({
             ...edge,
@@ -230,6 +233,49 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     reactflowController.updateEdges = updateEdges;
     return () => {
       delete reactflowController.updateEdges;
+    };
+  }, []);
+
+  // Get nodes
+  useEffect(() => {
+    reactflowController.getNodes = () => nodesRef.current;
+    return () => {
+      delete reactflowController.getNodes;
+    };
+  }, []);
+
+  // Add node
+  const addNode = useCallback(
+    (cellID: string, index: number, codeBlock: string | string[]) => {
+      const currentNodes = nodesRef.current;
+      const maxId = Math.max(...currentNodes.map(node => Number(node.id)));
+      setNodes(prevNodes => {
+        const node: CellNode = {
+          id: `${maxId + 1}`,
+          type: 'cell',
+          position: { x: 0, y: 0 },
+          data: {
+            order_index: index,
+            notebook_id: ywwidget.notebookID,
+            cell_id: cellID,
+            exec_count: 0,
+            header: `Cell ${maxId + 1}`,
+            code_block: codeBlock,
+            on_content_change: (env: ChangeEvent<HTMLTextAreaElement>) => {
+              ywwidget.onNodeContentChanged(`${maxId + 1}`, env.target.value);
+            },
+            status: 'idle'
+          }
+        };
+        return [...prevNodes, node];
+      });
+    },
+    [setNodes]
+  );
+  useEffect(() => {
+    reactflowController.addNode = addNode;
+    return () => {
+      delete reactflowController.addNode;
     };
   }, []);
 
@@ -399,18 +445,34 @@ export class YWWidget extends ReactWidget {
 
     // Jupyter creates a new cell when reordering the cell,
     // thus we need to bind the signals again
+    // TODO: need to disconnect this
     // TODO: the node should follow this logic, otherwise we cannot tell what is added and what is reordered
     this.notebook.content.model?.cells.changed.connect((_, change) => {
       console.log('[CellChange] change type:', change.type);
       console.log('[CellChange] newIndex', change.newIndex);
       if (change.type === 'add') {
         const cell = this.notebook.content.widgets[change.newIndex];
-        cell.model.contentChanged.connect(model => {
-          console.log('[Code Cell Content Change] CellID', model.id);
-          this.onCodeCellContentChanged(model.id);
-        });
+        // if the cellID exist in the node list, then it is reordering
+        if (
+          reactflowController
+            .getNodes?.()
+            .find(n => n.data.cell_id === cell.model.id)
+        ) {
+          // todo: this.node not being able to find anything
+          cell.model.contentChanged.connect(model => {
+            console.log('[Code Cell Content Change] CellID', model.id);
+            this.onCodeCellContentChanged(model.id);
+          });
+        } else {
+          reactflowController.addNode?.(
+            cell.model.id,
+            change.newIndex,
+            cell.model.toJSON().source
+          );
+        }
       }
     });
+
     console.log('[YWWidget] end of constructor');
   }
 
