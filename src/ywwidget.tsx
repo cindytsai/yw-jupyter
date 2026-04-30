@@ -349,29 +349,6 @@ export class YWWidget extends ReactWidget {
           }
         });
 
-        // Register to notebook actions to get the execution status when run the cell
-        NotebookActions.executed.connect((_, args) => {
-          const { cell, success } = args;
-          if (reactflowController.updateStatus) {
-            reactflowController.updateStatus(
-              cell.model.id,
-              success ? 'executed' : 'failed'
-            );
-          }
-
-          const exec_count = (cell.model as ICodeCellModel).executionCount;
-          console.log(
-            '[NotebookActions.executed] cellID:',
-            cell.model.id,
-            'exec_count:',
-            exec_count
-          );
-
-          if (reactflowController.updateEdges && exec_count) {
-            reactflowController.updateEdges(cell.model.id, exec_count);
-          }
-        });
-
         // prepare code cell for yw-core
         const cellMeta = cell.model.toJSON();
         const nodeID = `${codeCellIndex}`;
@@ -394,6 +371,29 @@ export class YWWidget extends ReactWidget {
           }
         });
         codeCellIndex += 1;
+      }
+    });
+
+    // Register to notebook actions to get the execution status when run the cell
+    NotebookActions.executed.connect((_, args) => {
+      const { cell, success } = args;
+      if (reactflowController.updateStatus) {
+        reactflowController.updateStatus(
+          cell.model.id,
+          success ? 'executed' : 'failed'
+        );
+      }
+
+      const exec_count = (cell.model as ICodeCellModel).executionCount;
+      console.log(
+        '[NotebookActions.executed] cellID:',
+        cell.model.id,
+        'exec_count:',
+        exec_count
+      );
+
+      if (reactflowController.updateEdges && exec_count) {
+        reactflowController.updateEdges(cell.model.id, exec_count);
       }
     });
 
