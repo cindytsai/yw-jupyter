@@ -208,6 +208,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     (cellID: string, execute_count: number) => {
       computeDeps(
         ywwidget.notebook.sessionContext.session?.kernel,
+        cellID,
         execute_count as number,
         nodesRef.current
       ).then(obj => {

@@ -10,6 +10,7 @@ import { CellNode } from './cell-node-widget';
  */
 export async function computeDeps(
   kernel: Kernel.IKernelConnection | undefined | null,
+  cell_id: string,
   exec_count: number,
   nodes: CellNode[]
 ): Promise<IYWEdge[]> {
@@ -20,8 +21,8 @@ export async function computeDeps(
   const py_ipyflow_cells_wrapper: string = `
 from ipyflow import cells
 DEP = []
-for exec_num in cells(${exec_count}).slice().raw_slice.keys():
-    DEP.append(cells().at_counter(exec_num).cell_id)
+for _ in cells(${exec_count}).parents.keys():
+    DEP.append(_.id)
 print(DEP)
 del(DEP)
 `;
@@ -39,7 +40,7 @@ del(DEP)
       if (msg.header.msg_type === 'stream') {
         const content = msg.content as IStream;
         output_raw = content.text;
-        resolve(parseIPyFlowOutput(output_raw, nodes));
+        resolve(parseIPyFlowOutput(output_raw, cell_id, nodes));
       }
     };
   });
@@ -47,6 +48,7 @@ del(DEP)
 
 function parseIPyFlowOutput(
   output_raw: string | string[] | null | undefined,
+  cell_id: string,
   nodes: CellNode[]
 ): IYWEdge[] {
   if (output_raw) {
@@ -59,14 +61,16 @@ function parseIPyFlowOutput(
     output = output?.replace(/'/g, '"');
     const dep_arr: string = JSON.parse(output);
     const edges: IYWEdge[] = [];
-    for (let i = 0; i < dep_arr.length - 1; i++) {
+    const target = nodes.find(n => n.data.cell_id === cell_id)?.id;
+    for (let i = 0; i < dep_arr.length; i++) {
       const source = nodes.find(node => node.data.cell_id === dep_arr[i])?.id;
-      const target = nodes.find(n => n.data.cell_id === dep_arr[i + 1])?.id;
-      edges.push({
-        id: `e${source}-${target}`,
-        source: `${source}`,
-        target: `${target}`
-      });
+      if (target && source) {
+        edges.push({
+          id: `e${source}-${target}`,
+          source: `${source}`,
+          target: `${target}`
+        });
+      }
     }
     return edges;
   } else {
