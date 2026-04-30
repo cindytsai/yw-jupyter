@@ -458,7 +458,6 @@ export class YWWidget extends ReactWidget {
             .getNodes?.()
             .find(n => n.data.cell_id === cell.model.id)
         ) {
-          // todo: this.node not being able to find anything
           cell.model.contentChanged.connect(model => {
             console.log('[Code Cell Content Change] CellID', model.id);
             this.onCodeCellContentChanged(model.id);
@@ -488,7 +487,7 @@ export class YWWidget extends ReactWidget {
   }
 
   onNodeContentChanged(nodeID: string, new_code_block: string | string[]) {
-    const node = this.Nodes.find(n => n.id === nodeID);
+    const node = reactflowController.getNodes?.().find(n => n.id === nodeID);
     if (node) {
       node.data.code_block = new_code_block;
       const cell = this.notebook.content.widgets.find(cell => {
@@ -522,7 +521,9 @@ export class YWWidget extends ReactWidget {
   focusYWNode(cellID: string) {
     console.log('[YWWidget] focusYWNode: ', cellID);
     // find the node with the given ID
-    const node = this.Nodes.find(n => n.data.cell_id === cellID);
+    const node = reactflowController
+      .getNodes?.()
+      .find(n => n.data.cell_id === cellID);
     if (node) {
       console.log('[YWWidget] Found node: ', node);
       reactflowController.focusAndSelectNode?.(node.id);
