@@ -468,6 +468,10 @@ export class YWWidget extends ReactWidget {
             change.newIndex,
             cell.model.toJSON().source
           );
+          cell.model.contentChanged.connect(model => {
+            console.log('[Code Cell Content Change] CellID', model.id);
+            this.onCodeCellContentChanged(model.id);
+          });
         }
       }
     });
