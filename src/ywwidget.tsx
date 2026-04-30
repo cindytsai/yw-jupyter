@@ -367,6 +367,9 @@ export class YWWidget extends ReactWidget {
         cell.model.contentChanged.connect(model => {
           console.log('[Code Cell Content Change] CellID', model.id);
           this.onCodeCellContentChanged(model.id);
+          if (reactflowController?.updateStatus) {
+            reactflowController.updateStatus(model.id, 'editing');
+          }
         }, this);
 
         // register execute status change listener (TODO: need disconnection to avoid memory leakage)
@@ -462,6 +465,9 @@ export class YWWidget extends ReactWidget {
           cell.model.contentChanged.connect(model => {
             console.log('[Code Cell Content Change] CellID', model.id);
             this.onCodeCellContentChanged(model.id);
+            if (reactflowController?.updateStatus) {
+              reactflowController.updateStatus(model.id, 'editing');
+            }
           });
         } else {
           reactflowController.addNode?.(
@@ -472,6 +478,9 @@ export class YWWidget extends ReactWidget {
           cell.model.contentChanged.connect(model => {
             console.log('[Code Cell Content Change] CellID', model.id);
             this.onCodeCellContentChanged(model.id);
+            if (reactflowController?.updateStatus) {
+              reactflowController.updateStatus(model.id, 'editing');
+            }
           });
         }
       }
