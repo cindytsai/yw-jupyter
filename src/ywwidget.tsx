@@ -189,7 +189,14 @@ function App({ ywwidget }: IAppProps): JSX.Element {
       setNodes(nds =>
         nds.map(node =>
           node.data.cell_id === cellID
-            ? { ...node, data: { ...node.data, status: status } }
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  prev_status: node.data.status,
+                  status: status
+                }
+              }
             : node
         )
       );
@@ -265,7 +272,8 @@ function App({ ywwidget }: IAppProps): JSX.Element {
             on_content_change: (env: ChangeEvent<HTMLTextAreaElement>) => {
               ywwidget.onNodeContentChanged(`${maxId + 1}`, env.target.value);
             },
-            status: 'idle'
+            status: 'idle',
+            prev_status: 'idle'
           }
         };
         return [...prevNodes, node];
@@ -367,9 +375,6 @@ export class YWWidget extends ReactWidget {
         cell.model.contentChanged.connect(model => {
           console.log('[Code Cell Content Change] CellID', model.id);
           this.onCodeCellContentChanged(model.id);
-          if (reactflowController?.updateStatus) {
-            reactflowController.updateStatus(model.id, 'editing');
-          }
         }, this);
 
         // register execute status change listener (TODO: need disconnection to avoid memory leakage)
@@ -396,6 +401,25 @@ export class YWWidget extends ReactWidget {
                 value.newValue
               );
             }
+          } else if (value.name === 'isDirty') {
+            // only executed cell will show isDirty.
+            if (
+              reactflowController?.updateStatus &&
+              typeof value.oldValue === 'boolean' &&
+              typeof value.newValue === 'boolean'
+            ) {
+              if (value.newValue === true && value.oldValue === false) {
+                reactflowController.updateStatus(model.id, 'editing');
+              } else {
+                const node = reactflowController
+                  .getNodes?.()
+                  .find(n => n.data.cell_id === model.id);
+                reactflowController.updateStatus(
+                  model.id,
+                  node?.data.prev_status ?? 'idle'
+                );
+              }
+            }
           }
         });
 
@@ -417,7 +441,8 @@ export class YWWidget extends ReactWidget {
             header: `Cell ${index + 1}`,
             code_block: cellMeta.source,
             on_content_change: onContentChange,
-            status: 'idle'
+            status: 'idle',
+            prev_status: 'idle'
           }
         });
         codeCellIndex += 1;
@@ -465,9 +490,6 @@ export class YWWidget extends ReactWidget {
           cell.model.contentChanged.connect(model => {
             console.log('[Code Cell Content Change] CellID', model.id);
             this.onCodeCellContentChanged(model.id);
-            if (reactflowController?.updateStatus) {
-              reactflowController.updateStatus(model.id, 'editing');
-            }
           });
         } else {
           reactflowController.addNode?.(
@@ -478,9 +500,6 @@ export class YWWidget extends ReactWidget {
           cell.model.contentChanged.connect(model => {
             console.log('[Code Cell Content Change] CellID', model.id);
             this.onCodeCellContentChanged(model.id);
-            if (reactflowController?.updateStatus) {
-              reactflowController.updateStatus(model.id, 'editing');
-            }
           });
         }
       }
