@@ -26,6 +26,7 @@ import { ICodeCellModel } from '@jupyterlab/cells';
 import { computeEdges } from './yw-core';
 import { EDGE_STYLE } from './node-edge-status-style';
 import { computeDeps } from './dependency-catcher';
+import { IChangedArgs } from '@jupyterlab/coreutils';
 
 const nodeTypes = {
   cell: CellNodeWidget
@@ -354,6 +355,40 @@ export class YWWidget extends ReactWidget {
     this.onCodeCellContentChanged(model.id);
   };
 
+  private onStateChanged = (model: ICellModel, value: IChangedArgs<any>) => {
+    console.log('[Code Cell State Changed]', { model, value });
+    // Update the execution state and count
+    if (value.name === 'executionState') {
+      if (
+        reactflowController?.updateStatus &&
+        typeof value.oldValue === 'string' &&
+        typeof value.newValue === 'string'
+      ) {
+        if (value.oldValue === 'idle' && value.newValue === 'running') {
+          reactflowController.updateStatus(model.id, 'running');
+        }
+      }
+    } else if (value.name === 'executionCount') {
+      if (
+        reactflowController?.updateExecutionCount &&
+        typeof value.newValue === 'number'
+      ) {
+        reactflowController.updateExecutionCount(model.id, value.newValue);
+      }
+    }
+  };
+
+  private disconnectSignals() {
+    // disconnect per-cell signals
+    this.notebook.content.widgets.forEach(cell => {
+      if (cell.model.type !== 'code') {
+        return;
+      }
+      cell.model.contentChanged.disconnect(this.onContentChanged, this);
+      cell.model.stateChanged.disconnect(this.onStateChanged, this);
+    });
+  }
+
   constructor(notebook: NotebookPanel) {
     super();
     this.addClass('jp-react-widget');
@@ -369,35 +404,11 @@ export class YWWidget extends ReactWidget {
       if (cell.model.type !== 'code') {
         return;
       } else {
-        // register content changed listener (TODO: need disconnection to avoid memory leakage)
+        // register content changed listener
         cell.model.contentChanged.connect(this.onContentChanged, this);
 
-        // register execute status change listener (TODO: need disconnection to avoid memory leakage)
-        cell.model.stateChanged.connect((model, value) => {
-          console.log('[Code Cell State Changed]', { model, value });
-          // Update the execution state and count
-          if (value.name === 'executionState') {
-            if (
-              reactflowController?.updateStatus &&
-              typeof value.oldValue === 'string' &&
-              typeof value.newValue === 'string'
-            ) {
-              if (value.oldValue === 'idle' && value.newValue === 'running') {
-                reactflowController.updateStatus(model.id, 'running');
-              }
-            }
-          } else if (value.name === 'executionCount') {
-            if (
-              reactflowController?.updateExecutionCount &&
-              typeof value.newValue === 'number'
-            ) {
-              reactflowController.updateExecutionCount(
-                model.id,
-                value.newValue
-              );
-            }
-          }
-        });
+        // register execute status change listener
+        cell.model.stateChanged.connect(this.onStateChanged, this);
 
         // prepare code cell for yw-core
         const cellMeta = cell.model.toJSON();
@@ -535,5 +546,12 @@ export class YWWidget extends ReactWidget {
   render(): JSX.Element {
     console.log('[YWWidget] render()');
     return <AppWrapper ywwidget={this} />;
+  }
+
+  dispose() {
+    // disconnect signals
+    this.disconnectSignals();
+
+    super.dispose();
   }
 }
