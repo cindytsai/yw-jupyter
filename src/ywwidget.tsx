@@ -400,6 +400,29 @@ export class YWWidget extends ReactWidget {
     }
   };
 
+  private onCellListChanged = (_, change) => {
+    console.log('[CellChange] change type:', change.type);
+    console.log('[CellChange] newIndex', change.newIndex);
+    if (change.type === 'add') {
+      const cell = this.notebook.content.widgets[change.newIndex];
+      // if the cellID exist in the node list, then it is reordering
+      if (
+        reactflowController
+          .getNodes?.()
+          .find(n => n.data.cell_id === cell.model.id)
+      ) {
+        cell.model.contentChanged.connect(this.onContentChanged, this);
+      } else {
+        reactflowController.addNode?.(
+          cell.model.id,
+          change.newIndex,
+          cell.model.toJSON().source
+        );
+        cell.model.contentChanged.connect(this.onContentChanged, this);
+      }
+    }
+  };
+
   private disconnectSignals() {
     // disconnect per-cell signals
     this.notebook.content.widgets.forEach(cell => {
@@ -409,6 +432,12 @@ export class YWWidget extends ReactWidget {
       cell.model.contentChanged.disconnect(this.onContentChanged, this);
       cell.model.stateChanged.disconnect(this.onStateChanged, this);
     });
+
+    // disconnect per-celllist signals
+    this.notebook.content.model?.cells.changed.disconnect(
+      this.onCellListChanged,
+      this
+    );
 
     // disconnect per-notebook signals
     NotebookActions.executed.disconnect(this.onExecuted, this);
@@ -465,30 +494,11 @@ export class YWWidget extends ReactWidget {
 
     // Jupyter creates a new cell when reordering the cell,
     // thus we need to bind the signals again
-    // TODO: need to disconnect this
     // TODO: the node should follow this logic, otherwise we cannot tell what is added and what is reordered
-    this.notebook.content.model?.cells.changed.connect((_, change) => {
-      console.log('[CellChange] change type:', change.type);
-      console.log('[CellChange] newIndex', change.newIndex);
-      if (change.type === 'add') {
-        const cell = this.notebook.content.widgets[change.newIndex];
-        // if the cellID exist in the node list, then it is reordering
-        if (
-          reactflowController
-            .getNodes?.()
-            .find(n => n.data.cell_id === cell.model.id)
-        ) {
-          cell.model.contentChanged.connect(this.onContentChanged, this);
-        } else {
-          reactflowController.addNode?.(
-            cell.model.id,
-            change.newIndex,
-            cell.model.toJSON().source
-          );
-          cell.model.contentChanged.connect(this.onContentChanged, this);
-        }
-      }
-    });
+    this.notebook.content.model?.cells.changed.connect(
+      this.onCellListChanged,
+      this
+    );
 
     console.log('[YWWidget] end of constructor');
   }
