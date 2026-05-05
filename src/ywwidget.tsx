@@ -378,6 +378,28 @@ export class YWWidget extends ReactWidget {
     }
   };
 
+  private onExecuted = (_, args) => {
+    const { cell, success } = args;
+    if (reactflowController.updateStatus) {
+      reactflowController.updateStatus(
+        cell.model.id,
+        success ? 'executed' : 'failed'
+      );
+    }
+
+    const exec_count = (cell.model as ICodeCellModel).executionCount;
+    console.log(
+      '[NotebookActions.executed] cellID:',
+      cell.model.id,
+      'exec_count:',
+      exec_count
+    );
+
+    if (reactflowController.updateEdges && exec_count) {
+      reactflowController.updateEdges(cell.model.id, exec_count);
+    }
+  };
+
   private disconnectSignals() {
     // disconnect per-cell signals
     this.notebook.content.widgets.forEach(cell => {
@@ -387,6 +409,9 @@ export class YWWidget extends ReactWidget {
       cell.model.contentChanged.disconnect(this.onContentChanged, this);
       cell.model.stateChanged.disconnect(this.onStateChanged, this);
     });
+
+    // disconnect per-notebook signals
+    NotebookActions.executed.disconnect(this.onExecuted, this);
   }
 
   constructor(notebook: NotebookPanel) {
@@ -436,27 +461,7 @@ export class YWWidget extends ReactWidget {
     });
 
     // Register to notebook actions to get the execution status when run the cell
-    NotebookActions.executed.connect((_, args) => {
-      const { cell, success } = args;
-      if (reactflowController.updateStatus) {
-        reactflowController.updateStatus(
-          cell.model.id,
-          success ? 'executed' : 'failed'
-        );
-      }
-
-      const exec_count = (cell.model as ICodeCellModel).executionCount;
-      console.log(
-        '[NotebookActions.executed] cellID:',
-        cell.model.id,
-        'exec_count:',
-        exec_count
-      );
-
-      if (reactflowController.updateEdges && exec_count) {
-        reactflowController.updateEdges(cell.model.id, exec_count);
-      }
-    });
+    NotebookActions.executed.connect(this.onExecuted, this);
 
     // Jupyter creates a new cell when reordering the cell,
     // thus we need to bind the signals again
