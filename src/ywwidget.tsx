@@ -21,6 +21,7 @@ import {
 
 import '@xyflow/react/dist/style.css';
 import { NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
+import { ICellModel } from '@jupyterlab/cells';
 import { ICodeCellModel } from '@jupyterlab/cells';
 import { computeEdges } from './yw-core';
 import { EDGE_STYLE } from './node-edge-status-style';
@@ -348,6 +349,11 @@ export class YWWidget extends ReactWidget {
   readonly notebook: NotebookPanel; // cannot be null
   Nodes: CellNode[] = [];
 
+  private onContentChanged = (model: ICellModel) => {
+    console.log('[onContentChanged] CellID', model.id);
+    this.onCodeCellContentChanged(model.id);
+  };
+
   constructor(notebook: NotebookPanel) {
     super();
     this.addClass('jp-react-widget');
@@ -364,10 +370,7 @@ export class YWWidget extends ReactWidget {
         return;
       } else {
         // register content changed listener (TODO: need disconnection to avoid memory leakage)
-        cell.model.contentChanged.connect(model => {
-          console.log('[Code Cell Content Change] CellID', model.id);
-          this.onCodeCellContentChanged(model.id);
-        }, this);
+        cell.model.contentChanged.connect(this.onContentChanged, this);
 
         // register execute status change listener (TODO: need disconnection to avoid memory leakage)
         cell.model.stateChanged.connect((model, value) => {
@@ -459,20 +462,14 @@ export class YWWidget extends ReactWidget {
             .getNodes?.()
             .find(n => n.data.cell_id === cell.model.id)
         ) {
-          cell.model.contentChanged.connect(model => {
-            console.log('[Code Cell Content Change] CellID', model.id);
-            this.onCodeCellContentChanged(model.id);
-          });
+          cell.model.contentChanged.connect(this.onContentChanged, this);
         } else {
           reactflowController.addNode?.(
             cell.model.id,
             change.newIndex,
             cell.model.toJSON().source
           );
-          cell.model.contentChanged.connect(model => {
-            console.log('[Code Cell Content Change] CellID', model.id);
-            this.onCodeCellContentChanged(model.id);
-          });
+          cell.model.contentChanged.connect(this.onContentChanged, this);
         }
       }
     });
