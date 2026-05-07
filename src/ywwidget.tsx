@@ -60,10 +60,14 @@ function App({ ywwidget }: IAppProps): JSX.Element {
   const [edges, setEdges] = useEdgesState<Edge>([]);
   const { getNode, setCenter } = useReactFlow();
   const nodesRef = useRef(nodes);
+  const edgesRef = useRef(edges);
 
   useEffect(() => {
     nodesRef.current = nodes;
   }, [nodes]);
+  useEffect(() => {
+    edgesRef.current = edges;
+  }, [edges]);
 
   // On node double click handler
   const onNodeDoubleClick = (event: React.MouseEvent, node: CellNode) => {
@@ -318,6 +322,82 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     console.log('[Debug] Edges: ', edges);
   };
 
+  // Select all the edges and upstream nodes when a node is selected
+  const getUpstreamNodeIdsAndEdgesIds = (
+    nodeId: string,
+    edges: Edge[]
+  ): { nodes: Set<string>; edges: Set<string> } => {
+    const upstreamNodes = new Set<string>();
+    const upstreamEdges = new Set<string>();
+    const queue = [nodeId];
+    while (queue.length > 0) {
+      const current = queue.pop()!;
+      edges.forEach(edge => {
+        if (edge.target === current && !upstreamNodes.has(edge.source)) {
+          upstreamNodes.add(edge.source);
+          upstreamEdges.add(edge.id);
+          queue.push(edge.source);
+        }
+      });
+    }
+    return { nodes: upstreamNodes, edges: upstreamEdges };
+  };
+  const onSelectionChange = useCallback(
+    ({ nodes: selectedNodes }: { nodes: CellNode[]; edges: Edge[] }) => {
+      if (selectedNodes.length === 0) {
+        // deselected: reset all edges
+        setEdges(prevEdges =>
+          prevEdges.map(edge => ({
+            ...edge,
+            ...(edge.data?.dep_type === 'guessed'
+              ? EDGE_STYLE['guess_dep']
+              : EDGE_STYLE['dep'])
+          }))
+        );
+        return;
+      }
+
+      console.log('[onSelectionChange]', selectedNodes);
+
+      // Get all upstream node ids for selected nodes
+      const upstreamIds: { nodes: Set<string>; edges: Set<string> } = {
+        nodes: new Set<string>(),
+        edges: new Set<string>()
+      };
+      selectedNodes.forEach(node => {
+        const { nodes, edges } = getUpstreamNodeIdsAndEdgesIds(
+          node.id,
+          edgesRef.current
+        );
+        nodes.forEach(id => upstreamIds['nodes'].add(id));
+        edges.forEach(id => upstreamIds['edges'].add(id));
+      });
+
+      console.log('[onSelectionChange]', upstreamIds['edges']);
+
+      setEdges(prevEdges =>
+        prevEdges.map(edge => {
+          const isUpstream = upstreamIds['edges'].has(edge.id);
+          if (isUpstream) {
+            return {
+              ...edge,
+              ...(edge.data?.dep_type === 'guessed'
+                ? EDGE_STYLE['selected_guess_dep']
+                : EDGE_STYLE['selected_dep'])
+            };
+          }
+          return {
+            ...edge,
+            ...(edge.data?.dep_type === 'guessed'
+              ? EDGE_STYLE['guess_dep']
+              : EDGE_STYLE['dep'])
+          };
+        })
+      );
+    },
+    [setEdges]
+  );
+
   // defaultNodes only used for initial rendering
   return (
     <ReactFlow
@@ -328,6 +408,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
       fitView
       onNodesChange={onNodesChange}
       onNodeDoubleClick={onNodeDoubleClick}
+      onSelectionChange={onSelectionChange}
     >
       <Panel position="top-left">
         <ToolBar
