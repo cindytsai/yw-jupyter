@@ -19,7 +19,6 @@ export async function computeDeps(
   }
   console.log('[ipyflow] ', { exec_count });
   const py_ipyflow_cells_wrapper: string = `
-from ipyflow import cells
 DEP = []
 for _ in cells(${exec_count}).parents.keys():
     DEP.append(_.id)
