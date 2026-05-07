@@ -27,6 +27,7 @@ import { computeEdges } from './yw-core';
 import { EDGE_STYLE } from './node-edge-status-style';
 import { computeDeps } from './dependency-catcher';
 import { IChangedArgs } from '@jupyterlab/coreutils';
+import { JupyterFrontEnd } from '@jupyterlab/application';
 
 const nodeTypes = {
   cell: CellNodeWidget
@@ -37,6 +38,7 @@ interface IAppProps {
 }
 
 export type ReactFlowControllerType = {
+  notebookCommands?: JupyterFrontEnd['commands'];
   focusAndSelectNode?: (nodeID: string) => void;
   updateCellNodeContent?: (cellID: string, content: string | string[]) => void;
   updateStatus?: (
@@ -356,6 +358,7 @@ function AppWrapper({ ywwidget }: IAppProps): JSX.Element {
 export class YWWidget extends ReactWidget {
   readonly notebookID: string;
   readonly notebook: NotebookPanel; // cannot be null
+  readonly commands: JupyterFrontEnd['commands'];
   Nodes: CellNode[] = [];
 
   private onContentChanged = (model: ICellModel) => {
@@ -451,13 +454,17 @@ export class YWWidget extends ReactWidget {
     NotebookActions.executed.disconnect(this.onExecuted, this);
   }
 
-  constructor(notebook: NotebookPanel) {
+  constructor(notebook: NotebookPanel, app: JupyterFrontEnd) {
     super();
     this.addClass('jp-react-widget');
     this.notebook = notebook;
     this.notebookID = notebook.id;
+    this.commands = app.commands;
     console.log('Constructing YWWidget with notebookID: ', this.notebookID);
     console.log('Constructing YWWidget with notebook: ', this.notebook);
+
+    // register notebook commands
+    reactflowController.notebookCommands = app.commands;
 
     // initialize default nodes and prepare it to list for yw-core
     // and register to listen to code cell content changes
