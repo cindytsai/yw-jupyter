@@ -50,7 +50,7 @@ export const EDGE_STYLE: Record<string, EdgeStyle> = {
     },
     style: {
       stroke: '#C2C2C2',
-      strokeWidth: 2,
+      strokeWidth: 3,
       opacity: 1,
       strokeDasharray: '5 5'
     }
@@ -79,7 +79,7 @@ export const EDGE_STYLE: Record<string, EdgeStyle> = {
     },
     style: {
       stroke: '#0052B0',
-      strokeWidth: 2,
+      strokeWidth: 3,
       opacity: 1.0
     }
   }
