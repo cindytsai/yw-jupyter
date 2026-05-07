@@ -68,7 +68,8 @@ function parseIPyFlowOutput(
         edges.push({
           id: `e${source}-${target}`,
           source: `${source}`,
-          target: `${target}`
+          target: `${target}`,
+          dep_type: 'definite'
         });
       }
     }

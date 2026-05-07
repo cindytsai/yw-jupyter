@@ -84,6 +84,9 @@ function App({ ywwidget }: IAppProps): JSX.Element {
           computedEdges.map(edge => ({
             ...edge,
             type: 'default',
+            data: {
+              dep_type: edge.dep_type
+            },
             ...EDGE_STYLE['guess_dep']
           }))
         );
@@ -214,7 +217,9 @@ function App({ ywwidget }: IAppProps): JSX.Element {
         execute_count as number,
         nodesRef.current
       ).then(obj => {
-        console.log('[updateEdges]', obj); // TODO: %flow mode normal should be code block to work.
+        // TODO: '%flow mode normal' and '%flow direction any_order' should be code block to work.
+        // TODO: don't import ipyflow cells many times
+        console.log('[updateEdges]', obj);
         setEdges(prevEdges => {
           const newEdges = obj.map(edge => ({
             ...edge,
@@ -222,6 +227,9 @@ function App({ ywwidget }: IAppProps): JSX.Element {
             source: edge.source,
             target: edge.target,
             type: 'default',
+            data: {
+              dep_type: edge.dep_type
+            },
             ...EDGE_STYLE['dep']
           }));
           const existingIds = new Set(newEdges.map(e => e.id));
