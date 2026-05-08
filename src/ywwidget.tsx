@@ -1,4 +1,5 @@
 import { ReactWidget } from '@jupyterlab/ui-components';
+import { Notification } from '@jupyterlab/apputils';
 
 import { CellNode, CellNodeWidget } from './cell-node-widget';
 
@@ -451,6 +452,27 @@ export class YWWidget extends ReactWidget {
   readonly commands: JupyterFrontEnd['commands'];
   Nodes: CellNode[] = [];
 
+  private async initIPyflow(): Promise<void> {
+    const kernel = this.notebook.sessionContext.session?.kernel;
+    if (!kernel) {
+      return;
+    }
+
+    const initCode = `
+%flow mode normal
+%flow direction any_order
+from ipyflow import cells
+`;
+
+    await kernel.requestExecute({
+      code: initCode,
+      silent: true,
+      store_history: false
+    }).done;
+
+    console.log('[YWWidget] ipyflow initialized');
+  }
+
   private onContentChanged = (model: ICellModel) => {
     console.log('[onContentChanged] CellID', model.id);
     this.onCodeCellContentChanged(model.id);
@@ -555,6 +577,21 @@ export class YWWidget extends ReactWidget {
 
     // register notebook commands
     reactflowController.notebookCommands = app.commands;
+
+    // initialize IPyflow for dynamic analysis
+    const kernel_name = this.notebook.sessionContext.session?.kernel?.name;
+    if (kernel_name === 'ipyflow'){
+      this.notebook.sessionContext.ready.then(() => {
+        this.initIPyflow();
+      });
+    } else {
+      Notification.error(
+        `Currently only supports ipyflow kernel for dynamic dependency tracking. Current kernel: "${kernel_name}"`,
+        {
+          autoClose: 10000
+        }
+      );
+    }
 
     // initialize default nodes and prepare it to list for yw-core
     // and register to listen to code cell content changes
