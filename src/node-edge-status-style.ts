@@ -75,10 +75,10 @@ export const EDGE_STYLE: Record<string, EdgeStyle> = {
       type: MarkerType.ArrowClosed,
       width: 10,
       height: 10,
-      color: '#0052B0'
+      color: '#0E70DAFF'
     },
     style: {
-      stroke: '#0052B0',
+      stroke: '#0E70DAFF',
       strokeWidth: 3,
       opacity: 1.0
     }
