@@ -8,7 +8,7 @@ import {
   NodeHeaderActions,
   // NodeHeaderDiveInAction,
   NodeHeaderRunAction,
-  NodeHeaderRunAllDownstreamAction,
+  // NodeHeaderRunAllDownstreamAction,
   NodeHeaderExportAction
   // NodeHeaderDeleteAction
 } from './components/node-header';
@@ -40,7 +40,7 @@ export const CellNodeWidget = memo(
             <NodeHeaderActions>
               {/*<NodeHeaderDiveInAction />*/}
               <NodeHeaderRunAction />
-              <NodeHeaderRunAllDownstreamAction />
+              {/*<NodeHeaderRunAllDownstreamAction />*/}
               <NodeHeaderExportAction />
               {/*  <NodeHeaderDeleteAction />*/}
             </NodeHeaderActions>
