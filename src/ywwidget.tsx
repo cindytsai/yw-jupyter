@@ -27,6 +27,7 @@ import { computeEdges } from './yw-core';
 import { EDGE_STYLE } from './node-edge-status-style';
 import { computeDeps } from './dependency-catcher';
 import { IChangedArgs } from '@jupyterlab/coreutils';
+import { JupyterFrontEnd } from '@jupyterlab/application';
 
 const nodeTypes = {
   cell: CellNodeWidget
@@ -37,6 +38,7 @@ interface IAppProps {
 }
 
 export type ReactFlowControllerType = {
+  notebookCommands?: JupyterFrontEnd['commands'];
   focusAndSelectNode?: (nodeID: string) => void;
   updateCellNodeContent?: (cellID: string, content: string | string[]) => void;
   updateStatus?: (
@@ -58,10 +60,14 @@ function App({ ywwidget }: IAppProps): JSX.Element {
   const [edges, setEdges] = useEdgesState<Edge>([]);
   const { getNode, setCenter } = useReactFlow();
   const nodesRef = useRef(nodes);
+  const edgesRef = useRef(edges);
 
   useEffect(() => {
     nodesRef.current = nodes;
   }, [nodes]);
+  useEffect(() => {
+    edgesRef.current = edges;
+  }, [edges]);
 
   // On node double click handler
   const onNodeDoubleClick = (event: React.MouseEvent, node: CellNode) => {
@@ -316,6 +322,87 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     console.log('[Debug] Edges: ', edges);
   };
 
+  // Select all the edges and upstream nodes when a node is selected
+  const getUpstreamNodeIdsAndEdgesIds = (
+    nodeId: string,
+    edges: Edge[]
+  ): { nodes: Set<string>; edges: Set<string> } => {
+    const upstreamNodes = new Set<string>();
+    const upstreamEdges = new Set<string>();
+    const visited = new Set<string>();
+    const queue = [nodeId];
+    while (queue.length > 0) {
+      const current = queue.pop()!;
+      if (visited.has(current)) {
+        continue;
+      }
+      visited.add(current);
+      edges.forEach(edge => {
+        if (edge.target === current) {
+          upstreamNodes.add(edge.source);
+          upstreamEdges.add(edge.id);
+          queue.push(edge.source);
+        }
+      });
+    }
+    return { nodes: upstreamNodes, edges: upstreamEdges };
+  };
+  const onSelectionChange = useCallback(
+    ({ nodes: selectedNodes }: { nodes: CellNode[]; edges: Edge[] }) => {
+      if (selectedNodes.length === 0) {
+        // deselected: reset all edges
+        setEdges(prevEdges =>
+          prevEdges.map(edge => ({
+            ...edge,
+            ...(edge.data?.dep_type === 'guessed'
+              ? EDGE_STYLE['guess_dep']
+              : EDGE_STYLE['dep'])
+          }))
+        );
+        return;
+      }
+
+      console.log('[onSelectionChange]', selectedNodes);
+
+      // Get all upstream node ids for selected nodes
+      const upstreamIds: { nodes: Set<string>; edges: Set<string> } = {
+        nodes: new Set<string>(),
+        edges: new Set<string>()
+      };
+      selectedNodes.forEach(node => {
+        const { nodes, edges } = getUpstreamNodeIdsAndEdgesIds(
+          node.id,
+          edgesRef.current
+        );
+        nodes.forEach(id => upstreamIds['nodes'].add(id));
+        edges.forEach(id => upstreamIds['edges'].add(id));
+      });
+
+      console.log('[onSelectionChange]', upstreamIds['edges']);
+
+      setEdges(prevEdges =>
+        prevEdges.map(edge => {
+          const isUpstream = upstreamIds['edges'].has(edge.id);
+          if (isUpstream) {
+            return {
+              ...edge,
+              ...(edge.data?.dep_type === 'guessed'
+                ? EDGE_STYLE['selected_guess_dep']
+                : EDGE_STYLE['selected_dep'])
+            };
+          }
+          return {
+            ...edge,
+            ...(edge.data?.dep_type === 'guessed'
+              ? EDGE_STYLE['guess_dep']
+              : EDGE_STYLE['dep'])
+          };
+        })
+      );
+    },
+    [setEdges]
+  );
+
   // defaultNodes only used for initial rendering
   return (
     <ReactFlow
@@ -326,6 +413,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
       fitView
       onNodesChange={onNodesChange}
       onNodeDoubleClick={onNodeDoubleClick}
+      onSelectionChange={onSelectionChange}
     >
       <Panel position="top-left">
         <ToolBar
@@ -356,6 +444,7 @@ function AppWrapper({ ywwidget }: IAppProps): JSX.Element {
 export class YWWidget extends ReactWidget {
   readonly notebookID: string;
   readonly notebook: NotebookPanel; // cannot be null
+  readonly commands: JupyterFrontEnd['commands'];
   Nodes: CellNode[] = [];
 
   private onContentChanged = (model: ICellModel) => {
@@ -451,13 +540,17 @@ export class YWWidget extends ReactWidget {
     NotebookActions.executed.disconnect(this.onExecuted, this);
   }
 
-  constructor(notebook: NotebookPanel) {
+  constructor(notebook: NotebookPanel, app: JupyterFrontEnd) {
     super();
     this.addClass('jp-react-widget');
     this.notebook = notebook;
     this.notebookID = notebook.id;
+    this.commands = app.commands;
     console.log('Constructing YWWidget with notebookID: ', this.notebookID);
     console.log('Constructing YWWidget with notebook: ', this.notebook);
+
+    // register notebook commands
+    reactflowController.notebookCommands = app.commands;
 
     // initialize default nodes and prepare it to list for yw-core
     // and register to listen to code cell content changes

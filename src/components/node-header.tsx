@@ -21,8 +21,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from './ui/dropdown-menu';
-import { NotebookActions } from '@jupyterlab/notebook';
 import { getNotebookAndCellById } from '../helper';
+import { reactflowController } from '../ywwidget';
 
 /* NODE HEADER -------------------------------------------------------------- */
 
@@ -237,11 +237,21 @@ export const NodeHeaderRunAction = () => {
 
   const handleClick = async () => {
     if (currentNode && notebookPanel && cell) {
-      await NotebookActions.runCells(
-        notebookPanel.content,
-        [cell],
-        notebookPanel.sessionContext
-      );
+      console.log('[Node] new handleClick');
+      // record original active cell
+      const oriActiveCellNumber = notebookPanel.content.activeCellIndex;
+
+      // set active cell to the cell of the node
+      notebookPanel.content.activeCellIndex =
+        notebookPanel.content.widgets.indexOf(cell);
+
+      // run cell
+      await reactflowController.notebookCommands?.execute('notebook:run-cell');
+
+      // set it back to original active cell
+      if (!oriActiveCellNumber) {
+        notebookPanel.content.activeCellIndex = oriActiveCellNumber;
+      }
     }
   };
 
