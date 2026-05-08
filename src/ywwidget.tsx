@@ -419,6 +419,10 @@ function App({ ywwidget }: IAppProps): JSX.Element {
         <ToolBar
           onLayoutSelectionChange={onLayoutSelectionChange}
           onClickLayout={onLayoutButton}
+          kernelName={
+            ywwidget.notebook.sessionContext.session?.kernel?.name ||
+            'No Kernel'
+          }
         />
         <DebugToolBar onClickDebug={onDebugButton} />
       </Panel>
