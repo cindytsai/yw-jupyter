@@ -24,6 +24,11 @@ export const getNotebookAndCellById = (notebookID: string, cellID: string) => {
   }
 };
 
+/**
+ * Return the target node's upstream nodes and edges, the returned nodes doesn't include the target node itself.
+ * @param nodeId target node id
+ * @param edges pass in all edges to find the upstream nodes and edges of the target node
+ */
 export const getUpstreamNodeIdsAndEdgesIds = (
   nodeId: string,
   edges: Edge[]

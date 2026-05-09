@@ -21,8 +21,12 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from './ui/dropdown-menu';
-import { getNotebookAndCellById } from '../helper';
+import {
+  getNotebookAndCellById,
+  getUpstreamNodeIdsAndEdgesIds
+} from '../helper';
 import { reactflowController } from '../ywwidget';
+import { Notification } from '@jupyterlab/apputils';
 
 /* NODE HEADER -------------------------------------------------------------- */
 
@@ -235,6 +239,7 @@ export const NodeHeaderRunAction = () => {
     currentNode?.data.cell_id as string
   );
 
+  // TODO: does not support running cells that are deleted
   const handleClick = async () => {
     if (currentNode && notebookPanel && cell) {
       console.log('[Node] new handleClick');
@@ -284,16 +289,38 @@ export const NodeHeaderExportAction = () => {
   // Get the node info
   const nodeID = useNodeId();
   const nodes = useNodes();
+  const edges = useEdges();
   const currentNode = nodes.find(node => node.id === nodeID);
+  if (nodeID === null) {
+    Notification.error('Cannot find node.', {
+      autoClose: 3000
+    });
+    return;
+  }
 
-  // Get the upstream
+  // Get the upstream and append itself
+  const upstreamIds: { nodes: Set<string>; edges: Set<string> } =
+    getUpstreamNodeIdsAndEdgesIds(nodeID, edges);
+  upstreamIds['nodes'].add(nodeID);
+  // Sort it based on the execute count
+  const code = nodes
+    .filter(n => upstreamIds['nodes'].has(n.id))
+    .sort(
+      (a, b) => (a.data.exec_count as number) - (b.data.exec_count as number)
+    )
+    .map(n =>
+      Array.isArray(n.data.code_block)
+        ? n.data.code_block.join('\n')
+        : (n.data.code_block as string)
+    )
+    .join('\n\n');
 
-
+  //
   const handleClick = async () => {
     console.log('[Run export]', nodes);
     console.log('[Run export]', currentNode);
-    // console.log('[Run export]', connectedEdges);
-    const code: string | string[] = `${nodeID}`;
+    console.log('[Run export]', upstreamIds);
+
     await navigator.clipboard.writeText(
       Array.isArray(code) ? code.join('\n') : code
     );
