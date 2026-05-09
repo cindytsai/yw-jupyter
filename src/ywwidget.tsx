@@ -24,7 +24,7 @@ import '@xyflow/react/dist/style.css';
 import { NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
 import { ICellModel } from '@jupyterlab/cells';
 import { ICodeCellModel } from '@jupyterlab/cells';
-import { computeEdges } from './yw-core';
+import { computeGuessedEdges } from './yw-core';
 import { EDGE_STYLE } from './node-edge-status-style';
 import { computeDeps } from './dependency-catcher';
 import { IChangedArgs } from '@jupyterlab/coreutils';
@@ -83,7 +83,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     console.log('[App] Compute edges on first launch');
     (async () => {
       try {
-        const computedEdges = await computeEdges(
+        const computedEdges = await computeGuessedEdges(
           ywwidget.notebook.sessionContext.session?.kernel,
           nodes
         );
@@ -111,7 +111,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     {
       (async () => {
         try {
-          const computedEdges = await computeEdges(
+          const computedEdges = await computeGuessedEdges(
             ywwidget.notebook.sessionContext.session?.kernel,
             nodes,
             event.target.value
@@ -580,7 +580,7 @@ from ipyflow import cells
 
     // initialize IPyflow for dynamic analysis
     const kernel_name = this.notebook.sessionContext.session?.kernel?.name;
-    if (kernel_name === 'ipyflow'){
+    if (kernel_name === 'ipyflow') {
       this.notebook.sessionContext.ready.then(() => {
         this.initIPyflow();
       });

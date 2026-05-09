@@ -56,7 +56,7 @@ def parse_yw_core(yw_records: list):
  * @param yw_core_estimate "Upper" or "Lower" estimate, default to "Upper"
  * @returns YWEdge[] computed by yw-core
  */
-export async function computeEdges(
+export async function computeGuessedEdges(
   kernel: Kernel.IKernelConnection | undefined | null,
   input_cells: CellNode[],
   yw_core_estimate: string = 'Lower'
