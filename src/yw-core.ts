@@ -81,11 +81,11 @@ export async function computeEdges(
     } else {
       code_content = code_block.join('\n');
     }
-    // Ignore magic command
-    code_content
-      .split('\n')
-      .filter(line => !line.trim().startsWith('%'))
-      .join('\n');
+    // TODO: cannot process magic command
+    // code_content
+    //   .split('\n')
+    //   .filter(line => !line.trim().startsWith('%'))
+    //   .join('\n');
     // Replace quotes with \quotes
     code_content = code_content.replace(/"/g, '\\"');
     code_content = code_content.replace(/'/g, "\\'");
