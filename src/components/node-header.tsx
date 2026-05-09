@@ -300,7 +300,7 @@ export const NodeHeaderExportAction = () => {
 
   // Get the upstream and append itself
   const upstreamIds: { nodes: Set<string>; edges: Set<string> } =
-    getUpstreamNodeIdsAndEdgesIds(nodeID, edges);
+    getUpstreamNodeIdsAndEdgesIds(nodeID, edges, 'definite');
   upstreamIds['nodes'].add(nodeID);
   // Sort it based on the execute count
   const code = nodes
@@ -315,7 +315,7 @@ export const NodeHeaderExportAction = () => {
     )
     .join('\n\n');
 
-  //
+  // Copy the code
   const handleClick = async () => {
     console.log('[Run export]', nodes);
     console.log('[Run export]', currentNode);
