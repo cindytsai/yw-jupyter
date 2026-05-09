@@ -263,33 +263,71 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     };
   }, []);
 
-  // Add node
+  // Add node and call static analysis
   const addNode = useCallback(
-    (cellID: string, index: number, codeBlock: string | string[]) => {
+    async (cellID: string, index: number, codeBlock: string | string[]) => {
+      // add node
       const currentNodes = nodesRef.current;
       const maxId = Math.max(...currentNodes.map(node => Number(node.id)));
+      const newId = maxId + 1;
+
+      const newNode: CellNode = {
+        id: `${newId}`,
+        type: 'cell',
+        position: { x: 0, y: 0 },
+        data: {
+          order_index: index,
+          notebook_id: ywwidget.notebookID,
+          cell_id: cellID,
+          exec_count: 0,
+          header: `Cell ${maxId + 1}`,
+          code_block: codeBlock,
+          on_content_change: (env: ChangeEvent<HTMLTextAreaElement>) => {
+            ywwidget.onNodeContentChanged(`${maxId + 1}`, env.target.value);
+          },
+          status: 'idle'
+        }
+      };
       setNodes(prevNodes => {
-        const node: CellNode = {
-          id: `${maxId + 1}`,
-          type: 'cell',
-          position: { x: 0, y: 0 },
-          data: {
-            order_index: index,
-            notebook_id: ywwidget.notebookID,
-            cell_id: cellID,
-            exec_count: 0,
-            header: `Cell ${maxId + 1}`,
-            code_block: codeBlock,
-            on_content_change: (env: ChangeEvent<HTMLTextAreaElement>) => {
-              ywwidget.onNodeContentChanged(`${maxId + 1}`, env.target.value);
-            },
-            status: 'idle'
-          }
-        };
-        return [...prevNodes, node];
+        return [...prevNodes, newNode];
+      });
+
+      // call static analysis
+      // order the nodes in a list:
+      //     executed -> based on order of the node book for idle
+      const execNodes = currentNodes
+        .filter(n => n.data.exec_count > 0)
+        .sort((a, b) => a.data.exec_count - b.data.exec_count);
+      const idleNodes = currentNodes
+        .filter(n => n.data.exec_count === 0)
+        .sort((a, b) => Number(a.id) - Number(b.id));
+      const prepNodes = [...execNodes, ...idleNodes, newNode];
+      const guessedEdges = await computeGuessedEdges(
+        ywwidget.notebook.sessionContext.session?.kernel,
+        prepNodes
+      );
+      const currentNodeGuessedEdges = guessedEdges.filter(
+        edge => edge.target === `${newId}`
+      );
+
+      // add the edges:
+      // since the cell is not executed / idle,
+      // we need to remove the old and add the new one
+      setEdges(prevEdges => {
+        // preserve other nodes' edges
+        const preserved = prevEdges.filter(e => e.target !== `${newId}`);
+        return [
+          ...preserved,
+          ...currentNodeGuessedEdges.map(edge => ({
+            ...edge,
+            type: 'default',
+            data: { dep_type: edge.dep_type },
+            ...EDGE_STYLE['guess_dep']
+          }))
+        ];
       });
     },
-    [setNodes]
+    [setNodes, setEdges]
   );
   useEffect(() => {
     reactflowController.addNode = addNode;
