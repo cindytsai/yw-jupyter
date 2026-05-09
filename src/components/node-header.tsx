@@ -278,7 +278,7 @@ export const NodeHeaderRunAllDownstreamAction = () => {
   );
 };
 
-/* NODE HEADER RUN ALL ACTION -------------------------------------- */
+/* NODE HEADER EXPORT ACTION -------------------------------------- */
 
 export const NodeHeaderExportAction = () => {
   // Get the node info
@@ -295,6 +295,9 @@ export const NodeHeaderExportAction = () => {
   const handleClick = () => {
     console.log('[Run export]', currentNode);
     console.log('[Run export]', connectedEdges);
+    reactflowController.notebookCommands?.execute('yw-jupyter:export-node', {
+      code: `${nodeID}`
+    });
   };
 
   return (
