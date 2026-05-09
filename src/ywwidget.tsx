@@ -29,6 +29,7 @@ import { EDGE_STYLE } from './node-edge-status-style';
 import { computeDeps } from './dependency-catcher';
 import { IChangedArgs } from '@jupyterlab/coreutils';
 import { JupyterFrontEnd } from '@jupyterlab/application';
+import { getUpstreamNodeIdsAndEdgesIds } from './helper';
 
 const nodeTypes = {
   cell: CellNodeWidget
@@ -324,30 +325,6 @@ function App({ ywwidget }: IAppProps): JSX.Element {
   };
 
   // Select all the edges and upstream nodes when a node is selected
-  const getUpstreamNodeIdsAndEdgesIds = (
-    nodeId: string,
-    edges: Edge[]
-  ): { nodes: Set<string>; edges: Set<string> } => {
-    const upstreamNodes = new Set<string>();
-    const upstreamEdges = new Set<string>();
-    const visited = new Set<string>();
-    const queue = [nodeId];
-    while (queue.length > 0) {
-      const current = queue.pop()!;
-      if (visited.has(current)) {
-        continue;
-      }
-      visited.add(current);
-      edges.forEach(edge => {
-        if (edge.target === current) {
-          upstreamNodes.add(edge.source);
-          upstreamEdges.add(edge.id);
-          queue.push(edge.source);
-        }
-      });
-    }
-    return { nodes: upstreamNodes, edges: upstreamEdges };
-  };
   const onSelectionChange = useCallback(
     ({ nodes: selectedNodes }: { nodes: CellNode[]; edges: Edge[] }) => {
       if (selectedNodes.length === 0) {

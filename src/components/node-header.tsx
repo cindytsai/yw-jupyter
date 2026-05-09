@@ -286,17 +286,19 @@ export const NodeHeaderExportAction = () => {
   const nodes = useNodes();
   const currentNode = nodes.find(node => node.id === nodeID);
 
-  // Get edge info
-  const edges = useEdges();
-  const connectedEdges = edges.filter(
-    edge => edge.source === nodeID || edge.target === nodeID
-  );
+  // Get the upstream
 
-  const handleClick = () => {
+
+  const handleClick = async () => {
+    console.log('[Run export]', nodes);
     console.log('[Run export]', currentNode);
-    console.log('[Run export]', connectedEdges);
-    reactflowController.notebookCommands?.execute('yw-jupyter:export-node', {
-      code: `${nodeID}`
+    // console.log('[Run export]', connectedEdges);
+    const code: string | string[] = `${nodeID}`;
+    await navigator.clipboard.writeText(
+      Array.isArray(code) ? code.join('\n') : code
+    );
+    Notification.success('Code copied to clipboard!', {
+      autoClose: 3000
     });
   };
 
