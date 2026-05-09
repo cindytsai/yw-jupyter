@@ -7,8 +7,6 @@ import { MainAreaWidget, WidgetTracker } from '@jupyterlab/apputils';
 
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 
-import { Notification } from '@jupyterlab/apputils';
-
 import { LabIcon } from '@jupyterlab/ui-components';
 
 import { YWWidget } from './ywwidget';
@@ -34,7 +32,6 @@ function activate(
   // all yw command
   const ywCommandOpen: string = 'yw-jupyter:open';
   const ywCommandGoToNode: string = 'yw-jupyter:go-to-node';
-  const ywCommandExport: string = 'yw-jupyter:export-node';
 
   function createYWWidget(
     notebook: NotebookPanel,
@@ -114,19 +111,6 @@ function activate(
           ywWidget?.content.focusYWNode(cellID);
         }
       }
-    }
-  });
-
-  // register yw export code command
-  app.commands.addCommand(ywCommandExport, {
-    label: 'YesWorkflow: Export Node',
-    caption: 'Export reproducible code of a node in YesWorkflow visualization',
-    execute: async (args: any) => {
-      const code = args['code'] as string | string[];
-      await navigator.clipboard.writeText(
-        code instanceof Array ? code.join('\n') : code
-      );
-      Notification.success('Code copied to clipboard!', { autoClose: 3000 });
     }
   });
 }
