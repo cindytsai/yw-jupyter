@@ -521,6 +521,29 @@ from ipyflow import cells
       ) {
         reactflowController.updateExecutionCount(model.id, value.newValue);
       }
+    } else if (value.name === 'isDirty') {
+      if (
+        reactflowController?.updateStatus &&
+        typeof value.oldValue === 'boolean' &&
+        typeof value.newValue === 'boolean'
+      ) {
+        const node = reactflowController
+          .getNodes?.()
+          .find(n => n.data.cell_id === model.id);
+        if (value.newValue === true && value.oldValue === false) {
+          if (node?.data.status !== 'idle') {
+            reactflowController.updateStatus(model.id, 'editing');
+          }
+        } else {
+          const prevStatus = node?.data.prev_status;
+          console.log('[isDirty]', node?.data.prev_status);
+          const revertStatus =
+            prevStatus === 'editing' || prevStatus === undefined
+              ? 'idle'
+              : prevStatus;
+          reactflowController.updateStatus(model.id, revertStatus);
+        }
+      }
     }
   };
 
