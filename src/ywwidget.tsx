@@ -495,7 +495,16 @@ from ipyflow import cells
 
   private onContentChanged = (model: ICellModel) => {
     console.log('[onContentChanged] CellID', model.id);
-    this.onCodeCellContentChanged(model.id);
+    const cellID = model.id;
+    const cell = this.notebook.content.widgets.find(cell => {
+      return cell.model.id === cellID;
+    });
+    console.log('[onContentChanged]', cell);
+    if (cell) {
+      const source = cell.model.toJSON().source;
+      reactflowController.updateCellNodeContent?.(cellID, source);
+      // TODO: start here: debounce and call static analysis to update edges when content changed
+    }
   };
 
   private onStateChanged = (model: ICellModel, value: IChangedArgs<any>) => {
@@ -687,17 +696,6 @@ from ipyflow import cells
     );
 
     console.log('[YWWidget] end of constructor');
-  }
-
-  onCodeCellContentChanged(cellID: string) {
-    const cell = this.notebook.content.widgets.find(cell => {
-      return cell.model.id === cellID;
-    });
-    console.log('[onCodeCellContentChanged]', cell);
-    if (cell) {
-      const source = cell.model.toJSON().source;
-      reactflowController.updateCellNodeContent?.(cellID, source);
-    }
   }
 
   onNodeContentChanged(nodeID: string, new_code_block: string | string[]) {
