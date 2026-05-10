@@ -9,7 +9,8 @@ import {
   // NodeHeaderDiveInAction,
   NodeHeaderRunAction,
   // NodeHeaderRunAllDownstreamAction,
-  NodeHeaderExportAction
+  NodeHeaderExportAction,
+  NodeHeaderDuplicateAction
   // NodeHeaderDeleteAction
 } from './components/node-header';
 import CodeEditor from '@uiw/react-textarea-code-editor';
@@ -42,6 +43,7 @@ export const CellNodeWidget = memo(
               {/*<NodeHeaderDiveInAction />*/}
               <NodeHeaderRunAction />
               {/*<NodeHeaderRunAllDownstreamAction />*/}
+              <NodeHeaderDuplicateAction />
               <NodeHeaderExportAction />
               {/*  <NodeHeaderDeleteAction />*/}
             </NodeHeaderActions>

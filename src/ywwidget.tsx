@@ -22,8 +22,7 @@ import {
 
 import '@xyflow/react/dist/style.css';
 import { NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
-import { ICellModel } from '@jupyterlab/cells';
-import { ICodeCellModel } from '@jupyterlab/cells';
+import { ICellModel, ICodeCellModel } from '@jupyterlab/cells';
 import { computeGuessedEdges, IYWEdge } from './yw-core';
 import { EDGE_STYLE } from './node-edge-status-style';
 import { computeDeps } from './dependency-catcher';
@@ -52,6 +51,7 @@ export type ReactFlowControllerType = {
   addNode?(cellID: string, index: number, codeBlock: string | string[]): void;
   getNodes?(): CellNode[];
   setGuessedEdges?(node: CellNode, edges: IYWEdge[]): void;
+  getNotebookPanel?(): NotebookPanel;
 };
 
 export const reactflowController: ReactFlowControllerType = {};
@@ -458,6 +458,11 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     },
     [setEdges]
   );
+
+  // Get notebook
+  reactflowController.getNotebookPanel = () => {
+    return ywwidget.notebook;
+  };
 
   // defaultNodes only used for initial rendering
   return (

@@ -9,6 +9,7 @@ import {
   EllipsisVertical,
   FastForward,
   FileDown,
+  Layers2,
   Play,
   SquareArrowDown,
   Trash
@@ -27,6 +28,7 @@ import {
 } from '../helper';
 import { reactflowController } from '../ywwidget';
 import { Notification } from '@jupyterlab/apputils';
+import { NotebookActions } from '@jupyterlab/notebook';
 
 /* NODE HEADER -------------------------------------------------------------- */
 
@@ -279,6 +281,39 @@ export const NodeHeaderRunAllDownstreamAction = () => {
   return (
     <NodeHeaderAction onClick={handleClick} label="Run all downstream action">
       <FastForward />
+    </NodeHeaderAction>
+  );
+};
+
+/* NODE DUPLICATE ACTION -------------------------------------- */
+
+export const NodeHeaderDuplicateAction = () => {
+  const nodeID = useNodeId();
+  const nodes = useNodes();
+  const currentNode = nodes.find(node => node.id === nodeID);
+
+  const handleClick = async () => {
+    console.log('[Duplicate] ', currentNode);
+    if (reactflowController.getNotebookPanel && currentNode) {
+      // insert cell below the branch based cell and set source code
+      const notebookPanel = reactflowController.getNotebookPanel();
+      notebookPanel.content.activeCellIndex =
+        notebookPanel.content.widgets.findIndex(
+          cell => cell.model.id === currentNode.data.cell_id
+        );
+
+      NotebookActions.insertBelow(notebookPanel.content);
+      const newCell = notebookPanel.content.activeCell;
+      const code = Array.isArray(currentNode.data.code_block)
+        ? currentNode.data.code_block.join('\n')
+        : (currentNode.data.code_block as string);
+      newCell?.model.sharedModel.setSource(code);
+    }
+  };
+
+  return (
+    <NodeHeaderAction onClick={handleClick} label="Duplicate the node">
+      <Layers2 />
     </NodeHeaderAction>
   );
 };
