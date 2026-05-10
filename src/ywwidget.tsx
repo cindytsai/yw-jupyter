@@ -285,7 +285,8 @@ function App({ ywwidget }: IAppProps): JSX.Element {
           on_content_change: (env: ChangeEvent<HTMLTextAreaElement>) => {
             ywwidget.onNodeContentChanged(`${maxId + 1}`, env.target.value);
           },
-          status: 'idle'
+          status: 'idle',
+          prev_status: 'idle'
         }
       };
       setNodes(prevNodes => {
@@ -639,7 +640,8 @@ from ipyflow import cells
             header: `Cell ${index + 1}`,
             code_block: cellMeta.source,
             on_content_change: onContentChange,
-            status: 'idle'
+            status: 'idle',
+            prev_status: 'idle'
           }
         });
         codeCellIndex += 1;
