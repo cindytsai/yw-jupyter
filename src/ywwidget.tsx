@@ -202,7 +202,14 @@ function App({ ywwidget }: IAppProps): JSX.Element {
       setNodes(nds =>
         nds.map(node =>
           node.data.cell_id === cellID
-            ? { ...node, data: { ...node.data, status: status } }
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  prev_status: node.data.status,
+                  status: status
+                }
+              }
             : node
         )
       );
