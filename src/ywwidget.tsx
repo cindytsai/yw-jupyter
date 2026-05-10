@@ -24,7 +24,7 @@ import '@xyflow/react/dist/style.css';
 import { NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
 import { ICellModel } from '@jupyterlab/cells';
 import { ICodeCellModel } from '@jupyterlab/cells';
-import { computeGuessedEdges } from './yw-core';
+import { computeGuessedEdges, IYWEdge } from './yw-core';
 import { EDGE_STYLE } from './node-edge-status-style';
 import { computeDeps } from './dependency-catcher';
 import { IChangedArgs } from '@jupyterlab/coreutils';
@@ -51,6 +51,7 @@ export type ReactFlowControllerType = {
   updateEdges?: (cellID: string, execute_count: number) => void;
   addNode?(cellID: string, index: number, codeBlock: string | string[]): void;
   getNodes?(): CellNode[];
+  setGuessedEdges?(node: CellNode, edges: IYWEdge[]): void;
 };
 
 export const reactflowController: ReactFlowControllerType = {};
@@ -362,6 +363,39 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     };
   }, []);
 
+  // setGuessedEdges
+  const setGuessedEdges = useCallback(
+    (node: CellNode, newEdges: IYWEdge[]) => {
+      setEdges(prevEdges => {
+        // remove all guessed edges for this node
+        const preserved = prevEdges.filter(
+          e => e.target !== node.id && e.source !== node.id
+        );
+
+        const currentNodeGuessedEdges = newEdges.filter(
+          edge => edge.source === node.id || edge.target === node.id
+        );
+
+        return [
+          ...preserved,
+          ...currentNodeGuessedEdges.map(edge => ({
+            ...edge,
+            type: 'default',
+            data: { dep_type: 'guessed' },
+            ...EDGE_STYLE['guess_dep']
+          }))
+        ];
+      });
+    },
+    [setEdges]
+  );
+  useEffect(() => {
+    reactflowController.setGuessedEdges = setGuessedEdges;
+    return () => {
+      delete reactflowController.setGuessedEdges;
+    };
+  }, []);
+
   // onDebugbutton
   const onDebugButton = () => {
     console.log('[Debug] Nodes: ', nodes);
@@ -493,17 +527,70 @@ from ipyflow import cells
     console.log('[YWWidget] ipyflow initialized');
   }
 
+  private contentChangeTimers = new Map<
+    string,
+    ReturnType<typeof setTimeout>
+  >();
+
   private onContentChanged = (model: ICellModel) => {
-    console.log('[onContentChanged] CellID', model.id);
+    // Get the cell
     const cellID = model.id;
     const cell = this.notebook.content.widgets.find(cell => {
       return cell.model.id === cellID;
     });
     console.log('[onContentChanged]', cell);
     if (cell) {
+      // sync the content
       const source = cell.model.toJSON().source;
       reactflowController.updateCellNodeContent?.(cellID, source);
-      // TODO: start here: debounce and call static analysis to update edges when content changed
+
+      // only trigger static analysis for idle
+      const node = reactflowController
+        .getNodes?.()
+        .find(n => n.data.cell_id === model.id);
+      if (node?.data.status !== 'idle') {
+        return;
+      }
+
+      // call static analysis to update edges when content changed
+      const existingTimer = this.contentChangeTimers.get(model.id);
+      if (existingTimer) {
+        clearTimeout(existingTimer);
+      }
+
+      const timer = setTimeout(() => {
+        (async () => {
+          console.log(
+            '[contentChanged] calling static analysis for:',
+            model.id
+          );
+
+          // static analysis
+          if (
+            reactflowController.getNodes &&
+            reactflowController.setGuessedEdges
+          ) {
+            const currentNodes = reactflowController.getNodes();
+            const execNodes = currentNodes
+              .filter(n => n.data.exec_count > 0)
+              .sort((a, b) => a.data.exec_count - b.data.exec_count);
+            const idleNodes = currentNodes
+              .filter(n => n.data.exec_count === 0)
+              .sort((a, b) => Number(a.id) - Number(b.id));
+            const prepNodes = [...execNodes, ...idleNodes];
+            const guessedEdges = await computeGuessedEdges(
+              this.notebook.sessionContext.session?.kernel,
+              prepNodes
+            );
+            console.log('[contentChange] node', node);
+            console.log('[contentChange] static analysis', guessedEdges);
+            reactflowController.setGuessedEdges(node, guessedEdges);
+          }
+          this.contentChangeTimers.delete(model.id);
+        })();
+      }, 1000);
+
+      this.contentChangeTimers.set(model.id, timer);
     }
   };
 
