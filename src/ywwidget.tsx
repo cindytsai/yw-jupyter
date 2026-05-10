@@ -537,13 +537,24 @@ from ipyflow import cells
     ReturnType<typeof setTimeout>
   >();
 
+  private clearContentChangeTimer(cellID: string) {
+    const existingTimer = this.contentChangeTimers.get(cellID);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      this.contentChangeTimers.delete(cellID);
+      console.log('[clearContentChangeTimer] cleared timer for:', cellID);
+    }
+  }
+
+  private runningCells = new Set<string>();
+
   private onContentChanged = (model: ICellModel) => {
     // Get the cell
     const cellID = model.id;
     const cell = this.notebook.content.widgets.find(cell => {
       return cell.model.id === cellID;
     });
-    console.log('[onContentChanged]', cell);
+    console.log('[onContentChanged] cell:', cell);
     if (cell) {
       // sync the content
       const source = cell.model.toJSON().source;
@@ -553,9 +564,32 @@ from ipyflow import cells
       const node = reactflowController
         .getNodes?.()
         .find(n => n.data.cell_id === model.id);
-      if (node?.data.status !== 'idle') {
+      console.log('[onContentChanged] node: ', node);
+      if (node?.data.status !== 'idle' || node?.data.prev_status !== 'idle') {
+        console.log(
+          '[onContentChanged] returned: ',
+          node?.data.status,
+          node?.data.prev_status
+        );
         return;
       }
+
+      // skip running cells
+      if (this.runningCells.has(model.id)) {
+        console.log('[onContentChanged] skipping - cell is running:', model.id);
+        return;
+      }
+
+      console.log(
+        '[onContentChanged] continue: ',
+        node?.data.status,
+        node?.data.prev_status
+      );
+
+      console.log(
+        '[onContentChanged] existing timer:',
+        this.contentChangeTimers.get(model.id)
+      );
 
       // call static analysis to update edges when content changed
       const existingTimer = this.contentChangeTimers.get(model.id);
@@ -563,10 +597,12 @@ from ipyflow import cells
         clearTimeout(existingTimer);
       }
 
+      console.log('[onContentChanged] timer', this.contentChangeTimers);
+
       const timer = setTimeout(() => {
         (async () => {
           console.log(
-            '[contentChanged] calling static analysis for:',
+            '[onContentChanged] calling static analysis for:',
             model.id
           );
 
@@ -587,8 +623,8 @@ from ipyflow import cells
               this.notebook.sessionContext.session?.kernel,
               prepNodes
             );
-            console.log('[contentChange] node', node);
-            console.log('[contentChange] static analysis', guessedEdges);
+            console.log('[onContentChanged] node', node);
+            console.log('[onContentChanged] static analysis', guessedEdges);
             reactflowController.setGuessedEdges(node, guessedEdges);
           }
           this.contentChangeTimers.delete(model.id);
@@ -610,6 +646,8 @@ from ipyflow import cells
       ) {
         if (value.oldValue === 'idle' && value.newValue === 'running') {
           reactflowController.updateStatus(model.id, 'running');
+          this.clearContentChangeTimer(model.id);
+          this.runningCells.add(model.id);
         }
       }
     } else if (value.name === 'executionCount') {
@@ -661,6 +699,8 @@ from ipyflow import cells
       'exec_count:',
       exec_count
     );
+
+    this.runningCells.delete(cell.model.id);
 
     if (reactflowController.updateEdges && exec_count) {
       reactflowController.updateEdges(cell.model.id, exec_count);
