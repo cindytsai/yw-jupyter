@@ -233,7 +233,17 @@ function App({ ywwidget }: IAppProps): JSX.Element {
         nodesRef.current
       ).then(obj => {
         console.log('[updateEdges]', obj);
+        const currentNodes = nodesRef.current;
+        const nodeID = currentNodes.find(
+          node => node.data.cell_id === cellID
+        )?.id;
         setEdges(prevEdges => {
+          // remove all definite edges where their target points to the current node
+          const preserved = prevEdges.filter(
+            e => !(e.target === nodeID && e.data?.dep_type === 'definite')
+          );
+
+          // add every new definite edges
           const newEdges = obj.map(edge => ({
             ...edge,
             id: edge.id,
@@ -245,8 +255,6 @@ function App({ ywwidget }: IAppProps): JSX.Element {
             },
             ...EDGE_STYLE['dep']
           }));
-          const existingIds = new Set(newEdges.map(e => e.id));
-          const preserved = prevEdges.filter(e => !existingIds.has(e.id));
           return [...preserved, ...newEdges];
         });
       });
@@ -285,12 +293,12 @@ function App({ ywwidget }: IAppProps): JSX.Element {
             exec_count: 0,
             header: `Cell ${maxId + 1}`,
             code_block: codeBlock,
-          on_content_change: (env: ChangeEvent<HTMLTextAreaElement>) => {
-            ywwidget.onNodeContentChanged(`${maxId + 1}`, env.target.value);
-          },
-          status: 'idle',
-          prev_status: 'idle'
-        }
+            on_content_change: (env: ChangeEvent<HTMLTextAreaElement>) => {
+              ywwidget.onNodeContentChanged(`${maxId + 1}`, env.target.value);
+            },
+            status: 'idle',
+            prev_status: 'idle'
+          }
         };
         return [...prevNodes, node];
       });
