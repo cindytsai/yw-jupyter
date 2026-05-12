@@ -232,8 +232,6 @@ function App({ ywwidget }: IAppProps): JSX.Element {
         execute_count as number,
         nodesRef.current
       ).then(obj => {
-        // TODO: '%flow mode normal' and '%flow direction any_order' should be code block to work.
-        // TODO: don't import ipyflow cells many times
         console.log('[updateEdges]', obj);
         setEdges(prevEdges => {
           const newEdges = obj.map(edge => ({
@@ -412,7 +410,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
         />
         <DebugToolBar onClickDebug={onDebugButton} />
       </Panel>
-      <MiniMap pannable zoomable position="top-right" />
+      <MiniMap pannable zoomable position="bottom-right" />
       <Controls />
       <Background />
     </ReactFlow>
@@ -429,7 +427,6 @@ function AppWrapper({ ywwidget }: IAppProps): JSX.Element {
 
 /**
  * A YWWidget that visualizes YesWorkflow data in a ReactFlow graph.
- * @todo Need to have a clear mapping/definition of cell node and node id.
  */
 export class YWWidget extends ReactWidget {
   readonly notebookID: string;
