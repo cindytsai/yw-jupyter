@@ -4,7 +4,10 @@ import { Notification } from '@jupyterlab/apputils';
 import { CellNode, CellNodeWidget } from './cell-node-widget';
 
 import React, { ChangeEvent, useCallback, useEffect, useRef } from 'react';
-import { DebugToolBar, ToolBar } from './tool-bar';
+import {
+  // DebugToolBar,
+  ToolBar
+} from './tool-bar';
 import { getLayoutedElements } from './layout';
 
 import {
@@ -388,11 +391,11 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     };
   }, []);
 
-  // onDebugbutton
-  const onDebugButton = () => {
-    console.log('[Debug] Nodes: ', nodes);
-    console.log('[Debug] Edges: ', edges);
-  };
+  // // onDebugbutton
+  // const onDebugButton = () => {
+  //   console.log('[Debug] Nodes: ', nodes);
+  //   console.log('[Debug] Edges: ', edges);
+  // };
 
   // Select all the edges and upstream nodes when a node is selected
   const onSelectionChange = useCallback(
@@ -478,7 +481,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
           }
           onClickStaticAnalysis={onStaticAnalysis}
         />
-        <DebugToolBar onClickDebug={onDebugButton} />
+        {/*<DebugToolBar onClickDebug={onDebugButton} />*/}
       </Panel>
       <MiniMap pannable zoomable position="bottom-right" />
       <Controls />
