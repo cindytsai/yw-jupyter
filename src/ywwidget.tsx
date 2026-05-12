@@ -135,11 +135,58 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     });
   }, [nodes, edges]);
 
-  // Debug button handler
-  // const onDebugButton = () => {
-  //   console.log('[Debug] Nodes: ', nodes);
-  //   console.log('[Debug] Edges: ', edges);
-  // };
+  // Static analysis button handler
+  const onStaticAnalysis = useCallback(async () => {
+    const currentNodes = nodesRef.current;
+
+    // call static analysis
+    // order the nodes in a list:
+    //     executed -> based on order of the node book for idle
+    const execNodes = currentNodes
+      .filter(n => n.data.exec_count > 0)
+      .sort((a, b) => a.data.exec_count - b.data.exec_count);
+    const idleNodes = currentNodes
+      .filter(n => n.data.exec_count === 0)
+      .sort((a, b) => Number(a.id) - Number(b.id));
+    const prepNodes = [...execNodes, ...idleNodes];
+    const guessedEdges = await computeGuessedEdges(
+      ywwidget.notebook.sessionContext.session?.kernel,
+      prepNodes
+    );
+
+    // add the edges:
+    // 1. remove all previously predicted edges
+    // 2. add only the predicted edges where either the source or the target are not executed
+    setEdges(prevEdges => {
+      // preserve only definite edges
+      const preserved = prevEdges.filter(
+        e => !(e.data?.dep_type === 'predicted')
+      );
+
+      // add all the predicted edges where either source or target != executed
+      const relevantGuessedEdges = guessedEdges.filter(edge => {
+        const sourceNode = nodesRef.current.find(n => n.id === edge.source);
+        const targetNode = nodesRef.current.find(n => n.id === edge.target);
+        return (
+          sourceNode?.data.status !== 'executed' ||
+          targetNode?.data.status !== 'executed'
+        );
+      });
+
+      return [
+        ...preserved,
+        ...relevantGuessedEdges.map(edge => ({
+          ...edge,
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          type: 'default',
+          data: { dep_type: 'predicted' },
+          ...EDGE_STYLE['guess_dep']
+        }))
+      ];
+    });
+  }, [setEdges]);
 
   // focus and select node and expose the function
   const focusAndSelectNode = useCallback(
@@ -415,6 +462,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
             ywwidget.notebook.sessionContext.session?.kernel?.name ||
             'No Kernel'
           }
+          onClickStaticAnalysis={onStaticAnalysis}
         />
         <DebugToolBar onClickDebug={onDebugButton} />
       </Panel>

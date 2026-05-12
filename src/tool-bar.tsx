@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { AlignVerticalJustifyStart, Bug } from 'lucide-react';
+import { AlignVerticalJustifyStart, Bug, Sparkles } from 'lucide-react';
 import { Button } from './components/ui/button';
 import {
   NativeSelect,
@@ -10,6 +10,7 @@ import {
 export interface IToolBarProps {
   onLayoutSelectionChange?: (event: ChangeEvent<HTMLSelectElement>) => void;
   onClickLayout?: () => void;
+  onClickStaticAnalysis?: () => void;
   kernelName?: string;
 }
 
@@ -20,12 +21,19 @@ export interface IDebugToolBarProps {
 export function ToolBar({
   onLayoutSelectionChange,
   onClickLayout,
+  onClickStaticAnalysis,
   kernelName
 }: IToolBarProps): JSX.Element {
   return (
     <div className="flex flex-wrap items-center gap-2 md:flex-row">
-      {/* Static Analysis */}
-      <span className="text-sm font-medium">Static Analysis</span>
+      {/*Button*/}
+      <div>
+        <Button variant="outline" size="sm" onClick={onClickStaticAnalysis}>
+          <Sparkles />
+          Static Analysis
+        </Button>
+      </div>
+      {/* Static Analysis option */}
       <NativeSelect defaultValue="Lower" onChange={onLayoutSelectionChange}>
         <NativeSelectOptGroup label="Static Analysis">
           <NativeSelectOption value="Lower">Lower</NativeSelectOption>
