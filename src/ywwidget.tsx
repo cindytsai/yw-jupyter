@@ -4,7 +4,10 @@ import { Notification } from '@jupyterlab/apputils';
 import { CellNode, CellNodeWidget } from './cell-node-widget';
 
 import React, { ChangeEvent, useCallback, useEffect, useRef } from 'react';
-import { DebugToolBar, ToolBar } from './tool-bar';
+import {
+  // DebugToolBar,
+  ToolBar
+} from './tool-bar';
 import { getLayoutedElements } from './layout';
 
 import {
@@ -22,9 +25,8 @@ import {
 
 import '@xyflow/react/dist/style.css';
 import { NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
-import { ICellModel } from '@jupyterlab/cells';
-import { ICodeCellModel } from '@jupyterlab/cells';
-import { computeGuessedEdges } from './yw-core';
+import { ICellModel, ICodeCellModel } from '@jupyterlab/cells';
+import { computeGuessedEdges, IYWEdge } from './yw-core';
 import { EDGE_STYLE } from './node-edge-status-style';
 import { computeDeps } from './dependency-catcher';
 import { IChangedArgs } from '@jupyterlab/coreutils';
@@ -51,6 +53,8 @@ export type ReactFlowControllerType = {
   updateEdges?: (cellID: string, execute_count: number) => void;
   addNode?(cellID: string, index: number, codeBlock: string | string[]): void;
   getNodes?(): CellNode[];
+  getNotebookPanel?(): NotebookPanel;
+  setGuessedEdges?(node: CellNode, edges: IYWEdge[]): void;
 };
 
 export const reactflowController: ReactFlowControllerType = {};
@@ -387,11 +391,11 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     };
   }, []);
 
-  // onDebugbutton
-  const onDebugButton = () => {
-    console.log('[Debug] Nodes: ', nodes);
-    console.log('[Debug] Edges: ', edges);
-  };
+  // // onDebugbutton
+  // const onDebugButton = () => {
+  //   console.log('[Debug] Nodes: ', nodes);
+  //   console.log('[Debug] Edges: ', edges);
+  // };
 
   // Select all the edges and upstream nodes when a node is selected
   const onSelectionChange = useCallback(
@@ -450,6 +454,11 @@ function App({ ywwidget }: IAppProps): JSX.Element {
     [setEdges]
   );
 
+  // Get notebook
+  reactflowController.getNotebookPanel = () => {
+    return ywwidget.notebook;
+  };
+
   // defaultNodes only used for initial rendering
   return (
     <ReactFlow
@@ -472,7 +481,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
           }
           onClickStaticAnalysis={onStaticAnalysis}
         />
-        <DebugToolBar onClickDebug={onDebugButton} />
+        {/*<DebugToolBar onClickDebug={onDebugButton} />*/}
       </Panel>
       <MiniMap pannable zoomable position="bottom-right" />
       <Controls />
