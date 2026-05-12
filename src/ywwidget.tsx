@@ -202,7 +202,14 @@ function App({ ywwidget }: IAppProps): JSX.Element {
       setNodes(nds =>
         nds.map(node =>
           node.data.cell_id === cellID
-            ? { ...node, data: { ...node.data, status: status } }
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  prev_status: node.data.status,
+                  status: status
+                }
+              }
             : node
         )
       );
@@ -280,11 +287,12 @@ function App({ ywwidget }: IAppProps): JSX.Element {
             exec_count: 0,
             header: `Cell ${maxId + 1}`,
             code_block: codeBlock,
-            on_content_change: (env: ChangeEvent<HTMLTextAreaElement>) => {
-              ywwidget.onNodeContentChanged(`${maxId + 1}`, env.target.value);
-            },
-            status: 'idle'
-          }
+          on_content_change: (env: ChangeEvent<HTMLTextAreaElement>) => {
+            ywwidget.onNodeContentChanged(`${maxId + 1}`, env.target.value);
+          },
+          status: 'idle',
+          prev_status: 'idle'
+        }
         };
         return [...prevNodes, node];
       });
@@ -601,7 +609,8 @@ from ipyflow import cells
             header: `Cell ${index + 1}`,
             code_block: cellMeta.source,
             on_content_change: onContentChange,
-            status: 'idle'
+            status: 'idle',
+            prev_status: 'idle'
           }
         });
         codeCellIndex += 1;
