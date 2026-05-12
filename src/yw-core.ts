@@ -7,7 +7,7 @@ export interface IYWEdge {
   id: string;
   source: string;
   target: string;
-  dep_type?: 'guessed' | 'definite';
+  dep_type?: 'predicted' | 'definite';
 }
 
 const py_parse_yw_core: string = `
@@ -176,7 +176,7 @@ function parseYWCoreOutput(
         id: `e${edge.source}-${edge.target}`,
         source: `${edge.source}`,
         target: `${edge.target}`,
-        dep_type: 'guessed'
+        dep_type: 'predicted'
       });
     });
     return edges;

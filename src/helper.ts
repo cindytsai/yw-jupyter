@@ -34,7 +34,7 @@ export const getNotebookAndCellById = (notebookID: string, cellID: string) => {
 export const getUpstreamNodeIdsAndEdgesIds = (
   nodeId: string,
   edges: Edge[],
-  select: 'all' | 'guessed' | 'definite' = 'all'
+  select: 'all' | 'predicted' | 'definite' = 'all'
 ): { nodes: Set<string>; edges: Set<string> } => {
   const upstreamNodes = new Set<string>();
   const upstreamEdges = new Set<string>();
@@ -51,7 +51,7 @@ export const getUpstreamNodeIdsAndEdgesIds = (
         const depType = (edge as IYWEdge)?.dep_type;
         if (
           select === 'all' ||
-          (select === 'guessed' && depType === 'guessed') ||
+          (select === 'predicted' && depType === 'predicted') ||
           (select === 'definite' && depType === 'definite')
         ) {
           upstreamNodes.add(edge.source);

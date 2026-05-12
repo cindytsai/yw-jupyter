@@ -45,7 +45,7 @@ export type ReactFlowControllerType = {
   updateCellNodeContent?: (cellID: string, content: string | string[]) => void;
   updateStatus?: (
     cellID: string,
-    status: 'executed' | 'running' | 'idle' | 'editing' | 'failed'
+    status: 'executed' | 'running' | 'idle' | 'stale' | 'failed'
   ) => void;
   updateExecutionCount?: (cellID: string, execCount: number) => void;
   updateEdges?: (cellID: string, execute_count: number) => void;
@@ -197,7 +197,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
   const updateStatus = useCallback(
     (
       cellID: string,
-      status: 'executed' | 'running' | 'idle' | 'editing' | 'failed'
+      status: 'executed' | 'running' | 'idle' | 'stale' | 'failed'
     ) => {
       setNodes(nds =>
         nds.map(node =>
@@ -338,7 +338,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
         setEdges(prevEdges =>
           prevEdges.map(edge => ({
             ...edge,
-            ...(edge.data?.dep_type === 'guessed'
+            ...(edge.data?.dep_type === 'predicted'
               ? EDGE_STYLE['guess_dep']
               : EDGE_STYLE['dep'])
           }))
@@ -370,14 +370,14 @@ function App({ ywwidget }: IAppProps): JSX.Element {
           if (isUpstream) {
             return {
               ...edge,
-              ...(edge.data?.dep_type === 'guessed'
+              ...(edge.data?.dep_type === 'predicted'
                 ? EDGE_STYLE['selected_guess_dep']
                 : EDGE_STYLE['selected_dep'])
             };
           }
           return {
             ...edge,
-            ...(edge.data?.dep_type === 'guessed'
+            ...(edge.data?.dep_type === 'predicted'
               ? EDGE_STYLE['guess_dep']
               : EDGE_STYLE['dep'])
           };
@@ -499,13 +499,13 @@ from ipyflow import cells
           .find(n => n.data.cell_id === model.id);
         if (value.newValue === true && value.oldValue === false) {
           if (node?.data.status !== 'idle') {
-            reactflowController.updateStatus(model.id, 'editing');
+            reactflowController.updateStatus(model.id, 'stale');
           }
         } else {
           const prevStatus = node?.data.prev_status;
           console.log('[isDirty]', node?.data.prev_status);
           const revertStatus =
-            prevStatus === 'editing' || prevStatus === undefined
+            prevStatus === 'stale' || prevStatus === undefined
               ? 'idle'
               : prevStatus;
           reactflowController.updateStatus(model.id, revertStatus);

@@ -24,8 +24,8 @@ export interface ICellNodeData extends Record<string, unknown> {
   header: string;
   code_block: string | string[];
   on_content_change?: (env: ChangeEvent<HTMLTextAreaElement>) => void;
-  status: 'executed' | 'running' | 'idle' | 'editing' | 'failed';
-  prev_status: 'executed' | 'running' | 'idle' | 'editing' | 'failed';
+  status: 'executed' | 'running' | 'idle' | 'stale' | 'failed';
+  prev_status: 'executed' | 'running' | 'idle' | 'stale' | 'failed';
 }
 
 export type CellNode = Node<ICellNodeData>;
