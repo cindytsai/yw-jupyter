@@ -285,12 +285,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
           node => node.data.cell_id === cellID
         )?.id;
         setEdges(prevEdges => {
-          // remove all definite edges where their target points to the current node
-          const preserved = prevEdges.filter(
-            e => !(e.target === nodeID && e.data?.dep_type === 'definite')
-          );
-
-          // add every new definite edges
+          // add and override every new definite edges
           const newEdges = obj.map(edge => ({
             ...edge,
             id: edge.id,
@@ -302,6 +297,19 @@ function App({ ywwidget }: IAppProps): JSX.Element {
             },
             ...EDGE_STYLE['dep']
           }));
+          const newEdgeIds = new Set(newEdges.map(e => e.id));
+
+          // preserve edges except:
+          // 1. definite edges targeting current node
+          // 2. edges whose ids already exist in newEdges
+          const preserved = prevEdges.filter(
+            e =>
+              !(
+                (e.target === nodeID && e.data?.dep_type === 'definite') ||
+                newEdgeIds.has(e.id)
+              )
+          );
+
           return [...preserved, ...newEdges];
         });
       });
