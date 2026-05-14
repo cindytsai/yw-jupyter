@@ -515,7 +515,6 @@ export class YWWidget extends ReactWidget {
 
     const initCode = `
 %flow mode normal
-%flow direction any_order
 from ipyflow import cells
 `;
 
