@@ -40,6 +40,9 @@ del(DEP)
         const content = msg.content as IStream;
         output_raw = content.text;
         resolve(parseIPyFlowOutput(output_raw, cell_id, nodes));
+      } else if (msg.header.msg_type === 'error') {
+        console.warn('[computeDeps] ipyflow query failed:', msg.content);
+        resolve([]);
       }
     };
   });
