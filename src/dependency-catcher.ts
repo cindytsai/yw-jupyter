@@ -1,13 +1,7 @@
-import { Kernel, KernelMessage } from '@jupyterlab/services';
+import { Kernel } from '@jupyterlab/services';
 import { IYWEdge } from './yw-core';
-import { IStream } from '@jupyterlab/nbformat';
 import { CellNode } from './cell-node-widget';
 
-/**
- *
- * @param kernel
- * @param exec_count
- */
 export async function computeDeps(
   kernel: Kernel.IKernelConnection | undefined | null,
   cell_id: string,
@@ -18,46 +12,36 @@ export async function computeDeps(
     return [];
   }
   console.log('[ipyflow] ', { exec_count });
-  const py_ipyflow_cells_wrapper: string = `
-DEP = []
-for _ in cells(${exec_count}).parents.keys():
-    DEP.append(_.id)
-print(DEP)
-del(DEP)
-`;
-  return new Promise<IYWEdge[]>(resolve => {
-    const dep_result = kernel.requestExecute({
-      code: py_ipyflow_cells_wrapper,
-      silent: false,
-      store_history: false
-    });
 
-    let output_raw: string | string[] | null | undefined = null;
-    dep_result.onIOPub = (msg: KernelMessage.IIOPubMessage) => {
-      console.log('[onIOPub] ', msg.header);
-      console.log('[onIOPub] ', msg.content);
-      if (msg.header.msg_type === 'stream') {
-        const content = msg.content as IStream;
-        output_raw = content.text;
-        resolve(parseIPyFlowOutput(output_raw, cell_id, nodes));
-      }
-    };
+  const future = kernel.requestExecute({
+    code: '',
+    user_expressions: {
+      dep: `[_.id for _ in cells(${exec_count}).parents.keys()]`
+    },
+    silent: true,
+    store_history: false
   });
+
+  const reply = await future.done;
+  const expr = (reply?.content as any)?.user_expressions?.dep;
+  console.log('[computeDeps] user_expressions reply:', expr);
+
+  if (expr?.status === 'error') {
+    console.warn('[computeDeps] ipyflow query failed:', expr);
+    return [];
+  }
+
+  const raw: string | undefined = expr?.data?.['text/plain'];
+  return parseIPyFlowOutput(raw, cell_id, nodes);
 }
 
 function parseIPyFlowOutput(
-  output_raw: string | string[] | null | undefined,
+  output_raw: string | undefined,
   cell_id: string,
   nodes: CellNode[]
 ): IYWEdge[] {
   if (output_raw) {
-    let output: string;
-    if (Array.isArray(output_raw)) {
-      output = output_raw.join(' ');
-    } else {
-      output = output_raw;
-    }
-    output = output?.replace(/'/g, '"');
+    const output: string = output_raw.replace(/'/g, '"');
     const dep_arr: string = JSON.parse(output);
     const edges: IYWEdge[] = [];
     const target = nodes.find(n => n.data.cell_id === cell_id)?.id;

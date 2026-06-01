@@ -277,46 +277,50 @@ function App({ ywwidget }: IAppProps): JSX.Element {
   // Update edges based on dependency from ipyflow
   const updateEdges = useCallback(
     (cellID: string, execute_count: number) => {
-      computeDeps(
-        ywwidget.notebook.sessionContext.session?.kernel,
-        cellID,
-        execute_count as number,
-        nodesRef.current
-      ).then(obj => {
-        console.log('[updateEdges]', obj);
-        const currentNodes = nodesRef.current;
-        const nodeID = currentNodes.find(
-          node => node.data.cell_id === cellID
-        )?.id;
-        setEdges(prevEdges => {
-          // add and override every new definite edges
-          const newEdges = obj.map(edge => ({
-            ...edge,
-            id: edge.id,
-            source: edge.source,
-            target: edge.target,
-            type: 'default',
-            data: {
-              dep_type: edge.dep_type
-            },
-            ...EDGE_STYLE['dep']
-          }));
-          const newEdgeIds = new Set(newEdges.map(e => e.id));
+      ywwidget.ipyflowReady
+        .then(() =>
+          computeDeps(
+            ywwidget.notebook.sessionContext.session?.kernel,
+            cellID,
+            execute_count as number,
+            nodesRef.current
+          )
+        )
+        .then(obj => {
+          console.log('[updateEdges]', obj);
+          const currentNodes = nodesRef.current;
+          const nodeID = currentNodes.find(
+            node => node.data.cell_id === cellID
+          )?.id;
+          setEdges(prevEdges => {
+            // add and override every new definite edges
+            const newEdges = obj.map(edge => ({
+              ...edge,
+              id: edge.id,
+              source: edge.source,
+              target: edge.target,
+              type: 'default',
+              data: {
+                dep_type: edge.dep_type
+              },
+              ...EDGE_STYLE['dep']
+            }));
+            const newEdgeIds = new Set(newEdges.map(e => e.id));
 
-          // preserve edges except:
-          // 1. definite edges targeting current node
-          // 2. edges whose ids already exist in newEdges
-          const preserved = prevEdges.filter(
-            e =>
-              !(
-                (e.target === nodeID && e.data?.dep_type === 'definite') ||
-                newEdgeIds.has(e.id)
-              )
-          );
+            // preserve edges except:
+            // 1. definite edges targeting current node
+            // 2. edges whose ids already exist in newEdges
+            const preserved = prevEdges.filter(
+              e =>
+                !(
+                  (e.target === nodeID && e.data?.dep_type === 'definite') ||
+                  newEdgeIds.has(e.id)
+                )
+            );
 
-          return [...preserved, ...newEdges];
+            return [...preserved, ...newEdges];
+          });
         });
-      });
     },
     [setEdges]
   );
@@ -506,6 +510,8 @@ export class YWWidget extends ReactWidget {
   readonly notebook: NotebookPanel; // cannot be null
   readonly commands: JupyterFrontEnd['commands'];
   Nodes: CellNode[] = [];
+  ipyflowReady: Promise<void> = Promise.resolve();
+  private wasRestarting = false;
 
   private async initIPyflow(): Promise<void> {
     const kernel = this.notebook.sessionContext.session?.kernel;
@@ -515,6 +521,7 @@ export class YWWidget extends ReactWidget {
 
     const initCode = `
 %flow mode normal
+%flow direction any_order
 from ipyflow import cells
 `;
 
@@ -526,6 +533,15 @@ from ipyflow import cells
 
     console.log('[YWWidget] ipyflow initialized');
   }
+
+  private onKernelStatusChanged = (_: unknown, status: string) => {
+    if (status === 'restarting') {
+      this.wasRestarting = true;
+    } else if (status === 'idle' && this.wasRestarting) {
+      this.wasRestarting = false;
+      this.ipyflowReady = this.initIPyflow();
+    }
+  };
 
   private onContentChanged = (model: ICellModel) => {
     console.log('[onContentChanged] CellID', model.id);
@@ -649,6 +665,12 @@ from ipyflow import cells
 
     // disconnect per-notebook signals
     NotebookActions.executed.disconnect(this.onExecuted, this);
+
+    // disconnect kernel status signal
+    this.notebook.sessionContext.statusChanged.disconnect(
+      this.onKernelStatusChanged,
+      this
+    );
   }
 
   constructor(notebook: NotebookPanel, app: JupyterFrontEnd) {
@@ -666,9 +688,13 @@ from ipyflow import cells
     // initialize IPyflow for dynamic analysis
     const kernel_name = this.notebook.sessionContext.session?.kernel?.name;
     if (kernel_name === 'ipyflow') {
-      this.notebook.sessionContext.ready.then(() => {
-        this.initIPyflow();
-      });
+      this.ipyflowReady = this.notebook.sessionContext.ready.then(() =>
+        this.initIPyflow()
+      );
+      this.notebook.sessionContext.statusChanged.connect(
+        this.onKernelStatusChanged,
+        this
+      );
     } else {
       Notification.error(
         `Currently only supports ipyflow kernel for dynamic dependency tracking. Current kernel: "${kernel_name}"`,
