@@ -63,7 +63,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
   // ywwidget.Nodes are only for initialization
   // especially edges, it should be internal to the widget
   const [nodes, setNodes, onNodesChange] = useNodesState(ywwidget.Nodes);
-  const [edges, setEdges] = useEdgesState<Edge>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { getNode, setCenter } = useReactFlow();
   const nodesRef = useRef(nodes);
   const edgesRef = useRef(edges);
@@ -472,6 +472,7 @@ function App({ ywwidget }: IAppProps): JSX.Element {
       nodeTypes={nodeTypes}
       fitView
       onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
       onNodeDoubleClick={onNodeDoubleClick}
       onSelectionChange={onSelectionChange}
     >
