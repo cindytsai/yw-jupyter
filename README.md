@@ -11,7 +11,8 @@ interactive dependency graph.
 - A **directed edge** represents a dependency between nodes, showing the relationship between different units of code.
 
 > [!IMPORTANT]
-> **A notebook cell can correspond to one or more nodes---if a cell is executed multiple times or subsequently edited, multiple nodes should be created to faithfully represent each execution state.**
+> A notebook cell can correspond to one or more nodes---if a cell is executed multiple times or subsequently edited, multiple nodes should be created to faithfully represent each execution state.
+>
 > **In the current prototype, users can mitigate this by duplicating the cell before editing.**
 > 
 > > This creates a new node that can be executed independently while preserving the original node and its downstream dependents unchanged.
