@@ -5,6 +5,7 @@
 ### New Features
 
 The **graph** reflects the current Python execution state, including both executed cells and those that have not yet been run.
+
 > [!IMPORTANT]
 > A notebook cell can correspond to one or more nodes---if a cell is executed multiple times or subsequently edited, multiple nodes should be created to faithfully represent each execution state.
 >
