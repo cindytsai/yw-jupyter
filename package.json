@@ -1,6 +1,6 @@
 {
     "name": "yw-jupyter",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "description": "A JupyterLab extension that visualizes notebook cell execution states and dependencies as an interactive graph.",
     "keywords": [
         "jupyter",
