@@ -10,16 +10,18 @@ interactive dependency graph.
 - A **node** represents a unit of code that is either executed or not yet executed (idle). Since Jupyter runs the code cell by cell, a node typically corresponds to a notebook cell. (See the warning below for explanations.)
 - A **directed edge** represents a dependency between nodes, showing the relationship between different units of code.
 
-> [!WARNING]
-> A notebook cell can correspond to one or more nodes---if a cell is executed multiple times or subsequently edited, multiple nodes should be created to faithfully represent each execution state.
-> In the current prototype, users can mitigate this by duplicating the cell before editing. 
-> This creates a new node that can be executed independently while preserving the original node and its downstream dependents unchanged.
-> An executed node that is subsequently edited is marked as stale (orange) to inform users of this unwanted behavior, 
-> visually distinguished from idle nodes that have never been executed.
-> This will be improved in future iterations.
+> [!IMPORTANT]
+> **A notebook cell can correspond to one or more nodes---if a cell is executed multiple times or subsequently edited, multiple nodes should be created to faithfully represent each execution state.**
+> **In the current prototype, users can mitigate this by duplicating the cell before editing.**
+> 
+> > This creates a new node that can be executed independently while preserving the original node and its downstream dependents unchanged.
+> > An executed node that is subsequently edited is marked as stale (orange) to inform users of this unwanted behavior, 
+> > visually distinguished from idle nodes that have never been executed.
+> > This will be improved in future iterations.
 
 
 **Static analysis** via [`yw-core`](https://github.com/CIRSS/yw-core) predicts data flow between cells from source code alone, letting users understand notebook structure before execution.
+
 **Dynamic analysis** via [`ipyflow`](https://github.com/ipyflow/ipyflow) tracks actual runtime cell dependencies as they execute, producing precise dependency edges.
 
 
@@ -49,17 +51,14 @@ interactive dependency graph.
 
 ### PyPI
 
-> [!NOTE]
-> Recommended installation method.
+> [!TIP]
+> Recommended method
 
 ```bash
 pip install yw-jupyter
 ```
 
 ### Install from source
-
-> [!WARNING]
-> Avoid installing from source unless you need the latest features or development mode.
 
 - Requirements:
   - `JupyterLab` >= 4.0.0
