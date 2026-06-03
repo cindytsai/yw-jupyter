@@ -25,7 +25,8 @@ classifiers = [
 ]
 dependencies = [
     "jupyterlab>=4.0.0",
-    "yw-core>=0.1.0,<1"
+    "yw-core>=0.1.0,<1",
+    "ipyflow"
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
 

@@ -7,10 +7,11 @@ export interface IYWEdge {
   id: string;
   source: string;
   target: string;
+  dep_type?: 'predicted' | 'definite';
 }
 
 const py_parse_yw_core: string = `
-def parse_yw_core(yw_records: list):
+def parse_yw_core(yw_records: list, node_ids: list):
     """Return a list of edges, the length is not necessary equal to the number of cells
     [{"source": cell_number, "target": cell_number}]
     """
@@ -34,7 +35,8 @@ def parse_yw_core(yw_records: list):
         input_objects = get_object_name(obj, ["inputs"])
         for io in input_objects:
             if io in block_table:
-                edge = {"source": block_table[io], "target": cell_index}
+                source_index = block_table[io]
+                edge = {"source": node_ids[source_index], "target": node_ids[cell_index]}
                 edges.append(edge)
         
         # update block_table using output and output candidate
@@ -55,7 +57,7 @@ def parse_yw_core(yw_records: list):
  * @param yw_core_estimate "Upper" or "Lower" estimate, default to "Upper"
  * @returns YWEdge[] computed by yw-core
  */
-export async function computeEdges(
+export async function computeGuessedEdges(
   kernel: Kernel.IKernelConnection | undefined | null,
   input_cells: CellNode[],
   yw_core_estimate: string = 'Lower'
@@ -80,6 +82,11 @@ export async function computeEdges(
     } else {
       code_content = code_block.join('\n');
     }
+    // TODO: cannot process magic command
+    // code_content
+    //   .split('\n')
+    //   .filter(line => !line.trim().startsWith('%'))
+    //   .join('\n');
     // Replace quotes with \quotes
     code_content = code_content.replace(/"/g, '\\"');
     code_content = code_content.replace(/'/g, "\\'");
@@ -98,13 +105,21 @@ export async function computeEdges(
     store_history: false
   }).done;
 
+  // Load node ids to Python
+  const py_cell_node_id = `node_ids = [${input_cells.map(n => `'${n.id}'`).join(',')}]`;
+  await kernel.requestExecute({
+    code: py_cell_node_id,
+    silent: false,
+    store_history: false
+  }).done;
+
   // call yw-core to compute edges silently
   const is_upper_estimate = yw_core_estimate === 'Upper' ? 'True' : 'False';
   const py_yw_core =
     'from yw_core.yw_core import extract_records\n' +
     `${py_parse_yw_core}\n` +
     `yw_records = extract_records(cell_list, is_upper_estimate=${is_upper_estimate})\n` +
-    'print(parse_yw_core(yw_records))\n';
+    'print(parse_yw_core(yw_records, node_ids))\n';
 
   return new Promise<IYWEdge[]>(resolve => {
     const exec_result = kernel.requestExecute({
@@ -115,6 +130,8 @@ export async function computeEdges(
 
     let output_raw: string | string[] | null | undefined = null;
     exec_result.onIOPub = (msg: KernelMessage.IIOPubMessage) => {
+      console.log('[yw-core] msg_type:', msg.header.msg_type);
+      console.log('[yw-core] msg_type:', msg.content);
       if (msg.header.msg_type === 'stream') {
         const content = msg.content as IStream;
         output_raw = content.text;
@@ -124,21 +141,12 @@ export async function computeEdges(
     };
 
     // clear the Python object (currently, python objects are hardcoded to cell_i and cell_list)
-    // TODO: can I make this prettier?
-    input_cells.forEach((cell, index) => {
-      kernel.requestExecute({
-        code: `del(cell_${index})`,
-        silent: false,
-        store_history: false
-      });
-    });
+    let clear_cmd = input_cells
+      .map((cell, index) => `del(cell_${index})`)
+      .join('; ');
+    clear_cmd += '; del(cell_list); del(extract_records); del(parse_yw_core)\n';
     kernel.requestExecute({
-      code: 'del(cell_list)\n',
-      silent: false,
-      store_history: false
-    });
-    kernel.requestExecute({
-      code: 'del(extract_records);del(parse_yw_core)\n',
+      code: clear_cmd,
       silent: false,
       store_history: false
     });
@@ -167,7 +175,8 @@ function parseYWCoreOutput(
       edges.push({
         id: `e${edge.source}-${edge.target}`,
         source: `${edge.source}`,
-        target: `${edge.target}`
+        target: `${edge.target}`,
+        dep_type: 'predicted'
       });
     });
     return edges;

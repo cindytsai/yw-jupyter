@@ -1,19 +1,34 @@
 import React, {
   forwardRef,
-  useCallback,
   HTMLAttributes,
-  ReactNode
+  ReactNode,
+  useCallback
 } from 'react';
-import { useNodeId, useNodes, useReactFlow } from '@xyflow/react';
-import { EllipsisVertical, Play, SquareArrowDown, Trash } from 'lucide-react';
+import { useEdges, useNodeId, useNodes, useReactFlow } from '@xyflow/react';
+import {
+  EllipsisVertical,
+  FastForward,
+  FileDown,
+  Layers2,
+  Play,
+  SquareArrowDown,
+  Trash
+} from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Slot } from '@radix-ui/react-slot';
 import { Button, ButtonProps } from './ui/button';
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent
+  DropdownMenuContent,
+  DropdownMenuTrigger
 } from './ui/dropdown-menu';
+import {
+  getNotebookAndCellById,
+  getUpstreamNodeIdsAndEdgesIds
+} from '../helper';
+import { reactflowController } from '../ywwidget';
+import { Notification } from '@jupyterlab/apputils';
+import { NotebookActions } from '@jupyterlab/notebook';
 
 /* NODE HEADER -------------------------------------------------------------- */
 
@@ -215,15 +230,146 @@ export const NodeHeaderDiveInAction = () => {
 /* NODE HEADER RUN ACTION -------------------------------------- */
 
 export const NodeHeaderRunAction = () => {
-  const node = useNodes();
+  // Get the node info
+  const nodeID = useNodeId();
+  const nodes = useNodes();
+  const currentNode = nodes.find(node => node.id === nodeID);
 
-  const handleClick = () => {
-    console.log('Run to node', node);
+  // Get the notebook and cell through notebook_id and cell_id
+  const { notebookPanel, cell } = getNotebookAndCellById(
+    currentNode?.data.notebook_id as string,
+    currentNode?.data.cell_id as string
+  );
+
+  // TODO: does not support running cells that are deleted
+  const handleClick = async () => {
+    if (currentNode && notebookPanel && cell) {
+      console.log('[Node] new handleClick');
+      // record original active cell
+      const oriActiveCellNumber = notebookPanel.content.activeCellIndex;
+
+      // set active cell to the cell of the node
+      notebookPanel.content.activeCellIndex =
+        notebookPanel.content.widgets.indexOf(cell);
+
+      // run cell
+      await reactflowController.notebookCommands?.execute('notebook:run-cell');
+
+      // set it back to original active cell
+      if (!oriActiveCellNumber) {
+        notebookPanel.content.activeCellIndex = oriActiveCellNumber;
+      }
+    }
   };
 
   return (
-    <NodeHeaderAction onClick={handleClick} label="Dive in to node">
+    <NodeHeaderAction onClick={handleClick} label="Run node">
       <Play />
+    </NodeHeaderAction>
+  );
+};
+
+/* NODE HEADER RUN ALL ACTION -------------------------------------- */
+
+export const NodeHeaderRunAllDownstreamAction = () => {
+  const node = useNodes();
+
+  const handleClick = () => {
+    console.log('Run all downstream node', node);
+  };
+
+  return (
+    <NodeHeaderAction onClick={handleClick} label="Run all downstream action">
+      <FastForward />
+    </NodeHeaderAction>
+  );
+};
+
+/* NODE DUPLICATE ACTION -------------------------------------- */
+
+export const NodeHeaderDuplicateAction = () => {
+  const nodeID = useNodeId();
+  const nodes = useNodes();
+  const currentNode = nodes.find(node => node.id === nodeID);
+
+  const handleClick = async () => {
+    console.log('[Duplicate] ', currentNode);
+    if (reactflowController.getNotebookPanel && currentNode) {
+      // insert cell below the branch based cell and set source code
+      const notebookPanel = reactflowController.getNotebookPanel();
+      notebookPanel.content.activeCellIndex =
+        notebookPanel.content.widgets.findIndex(
+          cell => cell.model.id === currentNode.data.cell_id
+        );
+
+      NotebookActions.insertBelow(notebookPanel.content);
+      const newCell = notebookPanel.content.activeCell;
+      const code = Array.isArray(currentNode.data.code_block)
+        ? currentNode.data.code_block.join('\n')
+        : (currentNode.data.code_block as string);
+      newCell?.model.sharedModel.setSource(code);
+    }
+  };
+
+  return (
+    <NodeHeaderAction onClick={handleClick} label="Duplicate the node">
+      <Layers2 />
+    </NodeHeaderAction>
+  );
+};
+
+/* NODE HEADER EXPORT ACTION -------------------------------------- */
+
+export const NodeHeaderExportAction = () => {
+  // Get the node info
+  const nodeID = useNodeId();
+  const nodes = useNodes();
+  const edges = useEdges();
+  const currentNode = nodes.find(node => node.id === nodeID);
+  if (nodeID === null) {
+    Notification.error('Cannot find node.', {
+      autoClose: 3000
+    });
+    return;
+  }
+
+  // Get the upstream and append itself
+  const upstreamIds: { nodes: Set<string>; edges: Set<string> } =
+    getUpstreamNodeIdsAndEdgesIds(nodeID, edges, 'definite');
+  upstreamIds['nodes'].add(nodeID);
+  // Sort it based on the execute count
+  const code = nodes
+    .filter(n => upstreamIds['nodes'].has(n.id))
+    .sort(
+      (a, b) => (a.data.exec_count as number) - (b.data.exec_count as number)
+    )
+    .map(n =>
+      Array.isArray(n.data.code_block)
+        ? n.data.code_block.join('\n')
+        : (n.data.code_block as string)
+    )
+    .join('\n\n');
+
+  // Copy the code
+  const handleClick = async () => {
+    console.log('[Run export]', nodes);
+    console.log('[Run export]', currentNode);
+    console.log('[Run export]', upstreamIds);
+
+    await navigator.clipboard.writeText(
+      Array.isArray(code) ? code.join('\n') : code
+    );
+    Notification.success('Code copied to clipboard!', {
+      autoClose: 3000
+    });
+  };
+
+  return (
+    <NodeHeaderAction
+      onClick={handleClick}
+      label="Run export reproducible script action"
+    >
+      <FileDown />
     </NodeHeaderAction>
   );
 };
